@@ -5,7 +5,7 @@ use std::io::{self, Read};
 // use std::mem::Discriminant;
 use std::ops::{self, AddAssign, DivAssign, MulAssign, SubAssign};
 // use std::vec;
-use std::fs::File;
+use std::{fs::File, process::exit};
 #[derive(Debug, Clone, Copy)]
 #[warn(dead_code)]
 struct Vect3 {
@@ -21,15 +21,15 @@ impl Vect3 {
         Self { e: [e1, e2, e3] }
     }
 
-    // fn x(&self) -> f64 {
-    //     self.e[0]
-    // }
+    fn x(&self) -> f64 {
+        self.e[0]
+    }
     fn y(&self) -> f64 {
         self.e[1]
     }
-    // fn z(&self) -> f64 {
-    //     self.e[2]
-    // }
+    fn z(&self) -> f64 {
+        self.e[2]
+    }
     // fn r(&self) -> f64 {
     //     self.e[0]
     // }
@@ -234,23 +234,30 @@ impl Ray {
     fn direction(&self) -> Vect3 {
         self.b
     }
-    // fn point_at_parameter(self, t: f64) -> Vect3 {
-    //     self.a + self.b * t
-    // }
+    fn point_at_parameter(self, t: f64) -> Vect3 {
+        self.a + self.b * t
+    }
 }
 
-fn hit_sphere(center: Vect3, radius: f64, r: &Ray) -> bool {
+fn hit_sphere(center: Vect3, radius: f64, r: &Ray) -> f64 {
     let oc: Vect3 = r.origin() - center;
     let a: f64 = dot(r.direction(), r.direction());
     let b: f64 = dot(oc, r.direction()) * 2.0;
     let c: f64 = dot(oc, oc) - radius * radius;
     let discriminant = b * b - a * c * 4.0;
-    discriminant > 0.0
+    if discriminant < 0.0 {
+        -1.0
+    } else {
+        (-b - discriminant).sqrt() / (a * 2.0)
+    }
 }
 
 fn color(r: Ray) -> Vect3 {
-    if hit_sphere(Vect3::new(0.0, 0.0, -1.0), 0.5, &r) {
-        Vect3::new(1.0, 0.0, 0.0)
+    let t: f64 = hit_sphere(Vect3::new(0.0, 0.0, -1.0), 0.5, &r);
+    if t > 0.0 {
+        let a = Vect3::new(0.0, 0.0, -1.0);
+        let n: Vect3 = unit_vector(r.point_at_parameter(t) - a);
+        Vect3::new(n.x() + 1.0, n.y() + 1.0, n.z() + 1.0) * 0.5
     } else {
         let unit_direction: Vect3 = unit_vector(r.direction());
         let t: f64 = unit_direction.y() * 0.5 + 1.0;
@@ -264,7 +271,7 @@ fn color(r: Ray) -> Vect3 {
 }
 
 fn main() {
-    let path = "output/book1/image3.jpg";
+    let path = "output/book1/image4.jpg";
 
     let width = 200;
     let height = 100;
@@ -306,4 +313,5 @@ fn main() {
         Ok(_) => {}
         Err(_) => println!("{}", style("Outputting image fails.").red()),
     }
+    exit(0);
 }
