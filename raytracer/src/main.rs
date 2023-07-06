@@ -5,7 +5,7 @@ use std::io::{self, Read};
 // use std::mem::Discriminant;
 use std::ops::{self, AddAssign, DivAssign, MulAssign, SubAssign};
 // use std::vec;
-use std::{fs::File, process::exit};
+use std::fs::File;
 #[derive(Debug, Clone, Copy)]
 #[warn(dead_code)]
 struct Vect3 {
@@ -170,7 +170,7 @@ impl ops::Div<Vect3> for Vect3 {
     fn div(self, rhs: Vect3) -> Self::Output {
         let mut result = Vect3 { e: [0.0; 3] };
         for i in 0..3 {
-            result.e[i] = self.e[i] * rhs.e[i];
+            result.e[i] = self.e[i] / rhs.e[i];
         }
         result
     }
@@ -306,5 +306,4 @@ fn main() {
         Ok(_) => {}
         Err(_) => println!("{}", style("Outputting image fails.").red()),
     }
-    exit(0);
 }
