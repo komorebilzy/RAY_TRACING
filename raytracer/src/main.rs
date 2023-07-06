@@ -242,7 +242,7 @@ impl Ray {
 fn hit_sphere(center: Vect3, radius: f64, r: &Ray) -> bool {
     let oc: Vect3 = r.origin() - center;
     let a: f64 = dot(r.direction(), r.direction());
-    let b: f64 = dot(oc, r.direction())*2.0;
+    let b: f64 = dot(oc, r.direction()) * 2.0;
     let c: f64 = dot(oc, oc) - radius * radius;
     let discriminant = b * b - a * c * 4.0;
     discriminant > 0.0
