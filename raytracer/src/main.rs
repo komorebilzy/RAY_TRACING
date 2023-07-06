@@ -1,55 +1,57 @@
 use console::style;
 use image::{ImageBuffer, RgbImage};
 use indicatif::ProgressBar;
-use std::io::{self, Read, Write};
-use std::ops::{self, Add, AddAssign, DivAssign, Mul, MulAssign, SubAssign};
-use std::{default, fmt};
+use std::io::{self, Read};
+// use std::mem::Discriminant;
+use std::ops::{self, AddAssign, DivAssign, MulAssign, SubAssign};
+// use std::vec;
 use std::{fs::File, process::exit};
 #[derive(Debug, Clone, Copy)]
+#[warn(dead_code)]
 struct Vect3 {
     e: [f64; 3],
 }
 
 impl Vect3 {
-    fn default() -> Self {
-        Self { e: [0.0, 0.0, 0.0] }
-    }
+    // fn default() -> Self {
+    //     Self { e: [0.0, 0.0, 0.0] }
+    // }
 
     fn new(e1: f64, e2: f64, e3: f64) -> Self {
         Self { e: [e1, e2, e3] }
     }
 
-    fn x(&self) -> f64 {
-        self.e[0]
-    }
+    // fn x(&self) -> f64 {
+    //     self.e[0]
+    // }
     fn y(&self) -> f64 {
         self.e[1]
     }
-    fn z(&self) -> f64 {
-        self.e[2]
-    }
-    fn r(&self) -> f64 {
-        self.e[0]
-    }
-    fn g(&self) -> f64 {
-        self.e[1]
-    }
-    fn b(&self) -> f64 {
-        self.e[2]
-    }
+    // fn z(&self) -> f64 {
+    //     self.e[2]
+    // }
+    // fn r(&self) -> f64 {
+    //     self.e[0]
+    // }
+    // fn g(&self) -> f64 {
+    //     self.e[1]
+    // }
+    // fn b(&self) -> f64 {
+    //     self.e[2]
+    // }
     fn length(&self) -> f64 {
         let sum_of_squres = self.e.iter().map(|x| x * x).sum::<f64>();
         sum_of_squres.sqrt()
     }
-    fn squared_length(&self) -> f64 {
-        self.e.iter().map(|x| x * x).sum::<f64>()
-    }
-    fn make_unit_vector(&mut self) {
-        let k = 1.0 / self.length();
-        self.e[0] *= k;
-        self.e[1] *= k;
-        self.e[2] *= k;
-    }
+    // fn squared_length(&self) -> f64 {
+    //     self.e.iter().map(|x| x * x).sum::<f64>()
+    // }
+    // fn make_unit_vector(&mut self) {
+    //     let k = 1.0 / self.length();
+    //     self.e[0] *= k;
+    //     self.e[1] *= k;
+    //     self.e[2] *= k;
+    // }
 }
 
 impl ops::Neg for Vect3 {
@@ -132,6 +134,17 @@ impl ops::Add<Vect3> for Vect3 {
     }
 }
 
+impl ops::Sub<Vect3> for Vect3 {
+    type Output = Vect3;
+    fn sub(self, rhs: Vect3) -> Self::Output {
+        let mut result = Vect3 { e: [0.0; 3] };
+        for i in 0..3 {
+            result.e[i] = self.e[i] - rhs.e[i];
+        }
+        result
+    }
+}
+
 impl ops::Mul<Vect3> for Vect3 {
     type Output = Vect3;
     fn mul(self, rhs: Vect3) -> Self::Output {
@@ -196,18 +209,22 @@ impl Read for Vect3 {
 fn unit_vector(v: Vect3) -> Vect3 {
     v / v.length()
 }
+fn dot(v1: Vect3, v2: Vect3) -> f64 {
+    let result: f64 = v1.e[0] * v2.e[0] + v1.e[1] * v2.e[1] + v1.e[2] * v2.e[2];
+    result
+}
 
 struct Ray {
     a: Vect3,
     b: Vect3,
 }
 impl Ray {
-    fn default() -> Self {
-        Self {
-            a: (Vect3::default()),
-            b: (Vect3::default()),
-        }
-    }
+    // fn default() -> Self {
+    //     Self {
+    //         a: (Vect3::default()),
+    //         b: (Vect3::default()),
+    //     }
+    // }
     fn new(a: Vect3, b: Vect3) -> Self {
         Self { a: (a), b: (b) }
     }
@@ -217,20 +234,37 @@ impl Ray {
     fn direction(&self) -> Vect3 {
         self.b
     }
-    fn point_at_parameter(self, t: f64) -> Vect3 {
-        self.a + self.b * t
-    }
+    // fn point_at_parameter(self, t: f64) -> Vect3 {
+    //     self.a + self.b * t
+    // }
+}
+
+fn hit_sphere(center: Vect3, radius: f64, r: &Ray) -> bool {
+    let oc: Vect3 = r.origin() - center;
+    let a: f64 = dot(r.direction(), r.direction());
+    let b: f64 = dot(oc, r.direction())*2.0;
+    let c: f64 = dot(oc, oc) - radius * radius;
+    let discriminant = b * b - a * c * 4.0;
+    discriminant > 0.0
 }
 
 fn color(r: Ray) -> Vect3 {
-    let unit_direction = unit_vector(r.direction());
-    let t: f64 = 0.5 * (unit_direction.y() + 1.0);
-    let result = Vect3::new(1.0, 1.0, 1.0) * (1.0 - t) + Vect3::new(0.5, 0.7, 1.0) * t;
-    result
+    if hit_sphere(Vect3::new(0.0, 0.0, -1.0), 0.5, &r) {
+        Vect3::new(1.0, 0.0, 0.0)
+    } else {
+        let unit_direction: Vect3 = unit_vector(r.direction());
+        let t: f64 = unit_direction.y() * 0.5 + 1.0;
+        let result: Vect3 = Vect3::new(1.0, 1.0, 1.0) * (1.0 - t) + Vect3::new(0.5, 0.7, 1.0) * t;
+        result
+    }
+    // let unit_direction = unit_vector(r.direction());
+    // let t: f64 = 0.5 * (unit_direction.y() + 1.0);
+    // let result = Vect3::new(1.0, 1.0, 1.0) * (1.0 - t) + Vect3::new(0.5, 0.7, 1.0) * t;
+    // result
 }
 
 fn main() {
-    let path = "output/book1/image2.jpg";
+    let path = "output/book1/image3.jpg";
 
     let width = 200;
     let height = 100;
