@@ -2,9 +2,11 @@ use console::style;
 use image::{ImageBuffer, RgbImage};
 use indicatif::ProgressBar;
 use std::io::{self, Read};
+use std::mem::Discriminant;
 // use std::mem::Discriminant;
 use std::ops::{self, AddAssign, DivAssign, MulAssign, SubAssign};
-// use std::vec;
+use std::rc::Rc;
+use std::vec;
 use std::{fs::File, process::exit};
 #[derive(Debug, Clone, Copy)]
 #[warn(dead_code)]
@@ -214,6 +216,7 @@ fn dot(v1: Vect3, v2: Vect3) -> f64 {
     result
 }
 
+// #[derive(Clone, Copy)]
 struct Ray {
     a: Vect3,
     b: Vect3,
@@ -239,6 +242,97 @@ impl Ray {
     }
 }
 
+pub struct HitRecord {
+    t: f64,
+    p: Vect3,
+    normal: Vect3,
+    front_face: bool,
+}
+impl HitRecord {
+    fn set_face_normal(&mut self, r: &Ray, outward_normal: Vect3) {
+        self.front_face = dot(r.direction(), outward_normal) > 0.0;
+        if self.front_face {
+            self.normal = outward_normal;
+        } else {
+            self.normal = -outward_normal;
+        }
+    }
+}
+
+trait HITTABLE {
+    fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool {
+        false
+    }
+}
+
+pub struct Sphere {
+    center: Vect3,
+    radius: f64,
+}
+impl Sphere {
+    fn new(cen: Vect3, r: f64) -> Self {
+        Self {
+            center: (cen),
+            radius: (r),
+        }
+    }
+}
+impl HITTABLE for Sphere {
+    fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool {
+        let oc: Vect3 = r.origin() - self.center;
+        let a: f64 = dot(r.direction(), r.direction());
+        let b: f64 = dot(oc, r.direction());
+        let c: f64 = dot(oc, oc) - self.radius * self.radius;
+        let discriminant: f64 = b * b - a * c;
+        if discriminant < 0.0 {
+            return false;
+        }
+        let mut temp: f64 = (-b - (b * b - a * c).sqrt()) / a;
+        if temp > t_max || temp < t_min {
+            temp = (-b + (b * b - a * c).sqrt()) / a;
+            if temp > t_max || temp < t_min {
+                return false;
+            }
+        }
+        rec.t = temp;
+        rec.p = r.point_at_parameter(rec.t);
+        // rec.normal = (rec.p - self.center) / self.radius;
+        let outward_normal: Vect3 = (rec.p - self.center) / self.radius;
+        rec.set_face_normal(r, outward_normal);
+        return true;
+    }
+}
+
+// #[derive(Clone)]
+pub struct HitableList {
+    objects: Vec<Rc<dyn HITTABLE>>,
+}
+impl HitableList {
+    fn new() -> Self {
+        Self {
+            objects: Vec::new(),
+        }
+    }
+    fn add(&mut self, object: Rc<dyn HITTABLE>) {
+        self.objects.push(object)
+    }
+}
+impl HITTABLE for HitableList {
+    fn hit(&self, r: &Ray, t_min: f64, t_max: f64, mut rec: &mut HitRecord) -> bool {
+        let mut temp_rec: HitRecord;
+        let mut hit_anything: bool = false;
+        let mut closest_so_far: f64 = t_max;
+        for i in self.objects.clone() {
+            if i.hit(r, t_min, closest_so_far, &mut temp_rec) {
+                hit_anything = true;
+                closest_so_far = temp_rec.t;
+                rec = &mut temp_rec;
+            }
+        }
+        hit_anything
+    }
+}
+
 fn hit_sphere(center: Vect3, radius: f64, r: &Ray) -> f64 {
     let oc: Vect3 = r.origin() - center;
     let a: f64 = dot(r.direction(), r.direction());
@@ -252,18 +346,31 @@ fn hit_sphere(center: Vect3, radius: f64, r: &Ray) -> f64 {
     }
 }
 
-fn color(r: Ray) -> Vect3 {
-    let t: f64 = hit_sphere(Vect3::new(0.0, 0.0, -1.0), 0.5, &r);
-    if t > 0.0 {
-        let a = Vect3::new(0.0, 0.0, -1.0);
-        let n: Vect3 = unit_vector(r.point_at_parameter(t) - a);
-        Vect3::new(n.x() + 1.0, n.y() + 1.0, n.z() + 1.0) * 0.5
+fn color(r: &Ray, world: Rc<dyn HITTABLE>) -> Vect3 {
+    let rec: HitRecord;
+    let infinity = f64::INFINITY;
+    if world.hit(r, 0.0, infinity, &mut rec) {
+        return Vect3::new(
+            rec.normal.x() + 1.0,
+            rec.normal.y() + 1.0,
+            rec.normal.z() + 1.0,
+        ) * 0.5;
     } else {
         let unit_direction: Vect3 = unit_vector(r.direction());
-        let t: f64 = unit_direction.y() * 0.5 + 1.0;
-        let result: Vect3 = Vect3::new(1.0, 1.0, 1.0) * (1.0 - t) + Vect3::new(0.5, 0.7, 1.0) * t;
-        result
+        let t: f64 = (unit_direction.y() + 1.0) * 0.5;
+        return Vect3::new(1.0, 1.0, 1.0) * (1.0 - t) + Vect3::new(0.5, 0.7, 1.0) * t;
     }
+    // let t: f64 = hit_sphere(Vect3::new(0.0, 0.0, -1.0), 0.5, &r);
+    // if t > 0.0 {
+    //     let a = Vect3::new(0.0, 0.0, -1.0);
+    //     let n: Vect3 = unit_vector(r.point_at_parameter(t) - a);
+    //     Vect3::new(n.x() + 1.0, n.y() + 1.0, n.z() + 1.0) * 0.5
+    // } else {
+    //     let unit_direction: Vect3 = unit_vector(r.direction());
+    //     let t: f64 = unit_direction.y() * 0.5 + 1.0;
+    //     let result: Vect3 = Vect3::new(1.0, 1.0, 1.0) * (1.0 - t) + Vect3::new(0.5, 0.7, 1.0) * t;
+    //     result
+    // }
     // let unit_direction = unit_vector(r.direction());
     // let t: f64 = 0.5 * (unit_direction.y() + 1.0);
     // let result = Vect3::new(1.0, 1.0, 1.0) * (1.0 - t) + Vect3::new(0.5, 0.7, 1.0) * t;
@@ -271,7 +378,7 @@ fn color(r: Ray) -> Vect3 {
 }
 
 fn main() {
-    let path = "output/book1/image4.jpg";
+    let path = "output/book1/image5.jpg";
 
     let width = 200;
     let height = 100;
@@ -288,15 +395,23 @@ fn main() {
     let horizontal = Vect3::new(4.0, 0.0, 0.0);
     let vertical = Vect3::new(0.0, 2.0, 0.0);
     let origin = Vect3::new(0.0, 0.0, 0.0);
-    for j in (0..height).rev() {
+    let world: &mut HitableList;
+    world.add(Rc::new(Sphere::new(Vect3::new(0.0, 0.0, -1.0), 0.5)));
+    world.add(Rc::new(Sphere::new(Vect3::new(0.0, -100.5, -1.0), 100.0)));
+    // let list: [Box<dyn HITTABLE>; 2];
+    // list[0] = Box::new(Sphere::new(Vect3::new(0.0, 0.0, -1.0), 0.5));
+    // list[1] = Box::new(Sphere::new(Vect3::new(0.0, -100.5, -1.0), 100.0));
+    // let world: Box<dyn HITTABLE> = Box::new(HitableList::new());
+    let world2 = Rc::new(world);
+    for j in 0..height {
         for i in 0..width {
             //获得(i,j)对应的（R,G,B）
-            let pixel = img.get_pixel_mut(i, j);
+            let pixel = img.get_pixel_mut(i, height - j - 1);
 
             let u: f64 = (i as f64) / (width as f64);
             let v: f64 = (j as f64) / (height as f64);
             let r: Ray = Ray::new(origin, lower_left_corner + horizontal * u + vertical * v);
-            let col: Vect3 = color(r);
+            let col: Vect3 = color(&r, world2);
             let r: f64 = 255.999 * col[0];
             let g: f64 = 255.999 * col[1];
             let b: f64 = 255.999 * col[2];
