@@ -13,6 +13,12 @@ use ray::*;
 mod sphere;
 use sphere::*;
 
+mod rtweekend;
+use rtweekend::*;
+
+mod camear;
+use camear::*;
+
 use console::style;
 use image::{ImageBuffer, RgbImage};
 use indicatif::ProgressBar;
@@ -22,7 +28,7 @@ use indicatif::ProgressBar;
 use std::rc::Rc;
 use std::{fs::File, process::exit};
 
-fn color(r: &Ray, world: &dyn Hittable) -> Vect3 {
+fn ray_color(r: &Ray, world: &dyn Hittable) -> Vect3 {
     let mut rec = HitRecord::new();
     let infinity = f64::INFINITY;
     if world.hit(r, 0.0, infinity, &mut rec) {
@@ -39,12 +45,13 @@ fn color(r: &Ray, world: &dyn Hittable) -> Vect3 {
 }
 
 fn main() {
-    let path = "output/book1/image5.jpg";
+    let path = "output/book1/image6.jpg";
 
     let aspect_ratio = 16.0 / 9.0;
     let width = 400;
     let height = ((width as f64) / aspect_ratio) as u32;
     let quality = 100;
+    let samples_per_pixel = 100;
     let mut img: RgbImage = ImageBuffer::new(width, height);
 
     let progress = if option_env!("CI").unwrap_or_default() == "true" {
@@ -53,6 +60,7 @@ fn main() {
         ProgressBar::new((height * width) as u64)
     };
 
+    //Camera
     let viewport_height = 2.0;
     let viewport_width = aspect_ratio * viewport_height;
     let focal_length = 1.0;
@@ -60,25 +68,31 @@ fn main() {
     let origin = Vect3::new(0.0, 0.0, 0.0);
     let horizontal = Vect3::new(viewport_width, 0.0, 0.0);
     let vertical = Vect3::new(0.0, viewport_height, 0.0);
-    let lower_left_corner =
+    let _lower_left_corner =
         origin - horizontal / 2.0 - vertical / 2.0 - Vect3::new(0.0, 0.0, focal_length);
 
     let mut world = HitableList::new();
     world.add(Rc::new(Sphere::new(Vect3::new(0.0, 0.0, -1.0), 0.5)));
     world.add(Rc::new(Sphere::new(Vect3::new(0.0, -100.5, -1.0), 100.0)));
 
+    let cam = Camera::new();
+
     for j in 0..height {
         for i in 0..width {
             //获得(i,j)对应的（R,G,B）
             let pixel = img.get_pixel_mut(i, height - j - 1);
+            let mut pixel_color = Vect3::new(0.0, 0.0, 0.0);
 
-            let u: f64 = (i as f64) / (width as f64);
-            let v: f64 = (j as f64) / (height as f64);
-            let r: Ray = Ray::new(origin, lower_left_corner + horizontal * u + vertical * v);
-            let col: Vect3 = color(&r, &world);
-            let r: f64 = 255.999 * col[0];
-            let g: f64 = 255.999 * col[1];
-            let b: f64 = 255.999 * col[2];
+            for _s in 0..samples_per_pixel {
+                let u: f64 = ((i as f64) + random_double()) / (width as f64);
+                let v: f64 = ((j as f64) + random_double()) / (height as f64);
+                let r: Ray = cam.get_ray(u, v);
+                pixel_color += ray_color(&r, &world);
+            }
+            let scale: f64 = 1.0 / (samples_per_pixel as f64);
+            let r: f64 = (256_f64) * clamp(scale * pixel_color[0], 0.0, 0.999);
+            let g: f64 = (256_f64) * clamp(scale * pixel_color[1], 0.0, 0.999);
+            let b: f64 = (256_f64) * clamp(scale * pixel_color[2], 0.0, 0.999);
             *pixel = image::Rgb([r as u8, g as u8, b as u8]);
         }
         progress.inc(1);
