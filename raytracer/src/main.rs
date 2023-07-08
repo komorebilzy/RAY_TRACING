@@ -32,8 +32,8 @@ fn ray_color(r: &Ray, world: &dyn Hittable, depth: i64) -> Vect3 {
     }
     let mut rec = HitRecord::new();
     let infinity = f64::INFINITY;
-    if world.hit(r, 0.0, infinity, &mut rec) {
-        let target = rec.p + rec.normal + random_in_unit_sphere();
+    if world.hit(r, 0.001, infinity, &mut rec) {
+        let target = rec.p + rec.normal + random_unit_vector();
         ray_color(&Ray::new(rec.p, target - rec.p), world, depth - 1) * 0.5
     } else {
         let unit_direction: Vect3 = unit_vector(r.direction());
@@ -43,7 +43,7 @@ fn ray_color(r: &Ray, world: &dyn Hittable, depth: i64) -> Vect3 {
 }
 
 fn main() {
-    let path = "output/book1/image8.jpg";
+    let path = "output/book1/image9.jpg";
 
     let aspect_ratio = 16.0 / 9.0;
     let width = 400;
