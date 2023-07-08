@@ -26,15 +26,15 @@ use indicatif::ProgressBar;
 use std::rc::Rc;
 use std::{fs::File, process::exit};
 
-fn ray_color(r: &Ray, world: &dyn Hittable) -> Vect3 {
+fn ray_color(r: &Ray, world: &dyn Hittable, depth: i64) -> Vect3 {
+    if depth <= 0 {
+        return Vect3::new(0.0, 0.0, 0.0);
+    }
     let mut rec = HitRecord::new();
     let infinity = f64::INFINITY;
     if world.hit(r, 0.0, infinity, &mut rec) {
-        Vect3::new(
-            rec.normal.x() + 1.0,
-            rec.normal.y() + 1.0,
-            rec.normal.z() + 1.0,
-        ) * 0.5
+        let target = rec.p + rec.normal + random_in_unit_sphere();
+        ray_color(&Ray::new(rec.p, target - rec.p), world, depth - 1) * 0.5
     } else {
         let unit_direction: Vect3 = unit_vector(r.direction());
         let t: f64 = (unit_direction.y() + 1.0) * 0.5;
@@ -43,13 +43,14 @@ fn ray_color(r: &Ray, world: &dyn Hittable) -> Vect3 {
 }
 
 fn main() {
-    let path = "output/book1/image6.jpg";
+    let path = "output/book1/image7.jpg";
 
     let aspect_ratio = 16.0 / 9.0;
     let width = 400;
     let height = ((width as f64) / aspect_ratio) as u32;
     let quality = 100;
     let samples_per_pixel = 100;
+    let max_depth = 50;
     let mut img: RgbImage = ImageBuffer::new(width, height);
 
     let progress = if option_env!("CI").unwrap_or_default() == "true" {
@@ -85,15 +86,15 @@ fn main() {
                 let u: f64 = ((i as f64) + random_double()) / (width as f64);
                 let v: f64 = ((j as f64) + random_double()) / (height as f64);
                 let r: Ray = cam.get_ray(u, v);
-                pixel_color += ray_color(&r, &world);
+                pixel_color += ray_color(&r, &world, max_depth);
             }
             let scale: f64 = 1.0 / (samples_per_pixel as f64);
             let r: f64 = (256_f64) * clamp(scale * pixel_color[0], 0.0, 0.999);
             let g: f64 = (256_f64) * clamp(scale * pixel_color[1], 0.0, 0.999);
             let b: f64 = (256_f64) * clamp(scale * pixel_color[2], 0.0, 0.999);
             *pixel = image::Rgb([r as u8, g as u8, b as u8]);
+            progress.inc(1);
         }
-        progress.inc(1);
     }
     progress.finish();
 

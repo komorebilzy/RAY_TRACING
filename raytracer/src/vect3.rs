@@ -1,3 +1,4 @@
+use crate::*;
 use std::io::{self, Read};
 use std::ops::{self, AddAssign, DivAssign, MulAssign, SubAssign};
 #[derive(Debug, Clone, Copy)]
@@ -14,15 +15,15 @@ impl Vect3 {
         Self { e: [e1, e2, e3] }
     }
 
-    pub fn x(&self) -> f64 {
-        self.e[0]
-    }
+    // pub fn x(&self) -> f64 {
+    //     self.e[0]
+    // }
     pub fn y(&self) -> f64 {
         self.e[1]
     }
-    pub fn z(&self) -> f64 {
-        self.e[2]
-    }
+    // pub fn z(&self) -> f64 {
+    //     self.e[2]
+    // }
     // fn r(&self) -> f64 {
     //     self.e[0]
     // }
@@ -33,8 +34,10 @@ impl Vect3 {
     //     self.e[2]
     // }
     pub fn length(&self) -> f64 {
-        let sum_of_squres = self.e.iter().map(|x| x * x).sum::<f64>();
-        sum_of_squres.sqrt()
+        self.squared_length().sqrt()
+    }
+    fn squared_length(&self) -> f64 {
+        self.e[0] * self.e[0] + self.e[1] * self.e[1] + self.e[2] * self.e[2]
     }
     // fn squared_length(&self) -> f64 {
     //     self.e.iter().map(|x| x * x).sum::<f64>()
@@ -45,6 +48,17 @@ impl Vect3 {
     //     self.e[1] *= k;
     //     self.e[2] *= k;
     // }
+    // pub fn random() -> Vect3 {
+    //     Vect3::new(random_double(), random_double(), random_double())
+    // }
+
+    pub fn random1(min: f64, max: f64) -> Vect3 {
+        Vect3::new(
+            random_double_rng(min, max),
+            random_double_rng(min, max),
+            random_double_rng(min, max),
+        )
+    }
 }
 
 impl ops::Neg for Vect3 {
@@ -206,4 +220,14 @@ pub fn unit_vector(v: Vect3) -> Vect3 {
 pub fn dot(v1: Vect3, v2: Vect3) -> f64 {
     let result: f64 = v1.e[0] * v2.e[0] + v1.e[1] * v2.e[1] + v1.e[2] * v2.e[2];
     result
+}
+
+pub fn random_in_unit_sphere() -> Vect3 {
+    loop {
+        let p = Vect3::random1(-1.0, 1.0);
+        if p.squared_length() >= 1.0 {
+            continue;
+        }
+        return p;
+    }
 }
