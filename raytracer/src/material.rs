@@ -54,6 +54,14 @@ impl Material for Metal {
     }
 }
 
+pub fn fmin(a: f64, b: f64) -> f64 {
+    if a < b {
+        a
+    } else {
+        b
+    }
+}
+
 pub struct Dielectric {
     pub ir: f64,
 }
@@ -73,8 +81,15 @@ impl Material for Dielectric {
             self.ir
         };
         let unit_direction = unit_vector(r_in.direction());
-        let refracted = refract(unit_direction, rec.normal, refraction_ratio);
-        let scattered = Ray::new(rec.p, refracted);
+        let cos_theta = fmin(dot(-unit_direction, rec.normal), 1.0);
+        let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
+        let cannot_refract = refraction_ratio * sin_theta > 1.0;
+        let direction = if cannot_refract {
+            reflect(unit_direction, rec.normal)
+        } else {
+            refract(unit_direction, rec.normal, refraction_ratio)
+        };
+        let scattered = Ray::new(rec.p, direction);
         let ans = Pair::new(attenuation, scattered);
         Some(ans)
     }
