@@ -43,7 +43,7 @@ fn ray_color(r: &Ray, world: &dyn Hittable, depth: i64) -> Vect3 {
 }
 
 fn main() {
-    let path = "output/book1/image7.jpg";
+    let path = "output/book1/image8.jpg";
 
     let aspect_ratio = 16.0 / 9.0;
     let width = 400;
@@ -89,10 +89,14 @@ fn main() {
                 pixel_color += ray_color(&r, &world, max_depth);
             }
             let scale: f64 = 1.0 / (samples_per_pixel as f64);
-            let r: f64 = (256_f64) * clamp(scale * pixel_color[0], 0.0, 0.999);
-            let g: f64 = (256_f64) * clamp(scale * pixel_color[1], 0.0, 0.999);
-            let b: f64 = (256_f64) * clamp(scale * pixel_color[2], 0.0, 0.999);
-            *pixel = image::Rgb([r as u8, g as u8, b as u8]);
+            let r: f64 = (scale * pixel_color[0]).sqrt();
+            let g: f64 = (scale * pixel_color[1]).sqrt();
+            let b: f64 = (scale * pixel_color[2]).sqrt();
+            *pixel = image::Rgb([
+                ((256_f64) * clamp(r, 0.0, 0.999)) as u8,
+                ((256_f64) * clamp(g, 0.0, 0.999)) as u8,
+                ((256_f64) * clamp(b, 0.0, 0.999)) as u8,
+            ]);
             progress.inc(1);
         }
     }
