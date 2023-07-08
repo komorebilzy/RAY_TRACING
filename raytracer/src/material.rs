@@ -71,6 +71,11 @@ impl Dielectric {
             ir: (index_of_refractiom),
         }
     }
+    // fn reflectance(cosine:f64,ref_idx:f64)->f64{
+    //     let r=(1-ref_idx)/(1+ref_idx);
+    //     r=r*r;
+    //     r+(1-r)*()
+    // }
 }
 impl Material for Dielectric {
     fn scatter(&self, r_in: Ray, rec: HitRecord) -> Option<Pair<Vect3, Ray>> {
