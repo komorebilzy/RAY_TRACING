@@ -238,8 +238,8 @@ pub fn random_in_unit_sphere() -> Vect3 {
 pub fn random_in_hemisphere(normal: Vect3) -> Vect3 {
     let in_unit_sphere = random_in_unit_sphere();
     if dot(in_unit_sphere, normal) > 0.0 {
-        in_unit_sphere;
+        in_unit_sphere
     } else {
-        -in_unit_sphere;
+        -in_unit_sphere
     }
 }
