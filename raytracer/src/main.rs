@@ -52,7 +52,7 @@ fn ray_color(r: &Ray, world: &dyn Hittable, depth: i64) -> Vect3 {
 }
 
 fn main() {
-    let path = "output/book1/image10.jpg";
+    let path = "output/book1/image11.jpg";
 
     let aspect_ratio = 16.0 / 9.0;
     let width = 400;
