@@ -23,8 +23,6 @@ use console::style;
 use image::{ImageBuffer, RgbImage};
 use indicatif::ProgressBar;
 
-// use std::mem::Discriminant;
-
 use std::rc::Rc;
 use std::{fs::File, process::exit};
 
