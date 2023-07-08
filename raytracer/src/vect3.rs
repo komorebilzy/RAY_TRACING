@@ -260,3 +260,9 @@ pub fn reflect(v: Vect3, n: Vect3) -> Vect3 {
 //         return -in_unit_sphere;
 //     }
 // }
+pub fn refract(uv: Vect3, n: Vect3, etai_over_etat: f64) -> Vect3 {
+    let cos_theta: f64 = if dot(-uv, n) < 1.0 { dot(-uv, n) } else { 1.0 };
+    let r_out_perp = (uv + n * cos_theta) * etai_over_etat;
+    let r_out_parallel = -n * (1.0 - r_out_perp.squared_length()).abs().sqrt();
+    r_out_perp + r_out_parallel
+}

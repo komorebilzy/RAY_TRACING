@@ -52,7 +52,7 @@ fn ray_color(r: &Ray, world: &dyn Hittable, depth: i64) -> Vect3 {
 }
 
 fn main() {
-    let path = "output/book1/image12.jpg";
+    let path = "output/book1/image13.jpg";
 
     let aspect_ratio = 16.0 / 9.0;
     let width = 400;
@@ -91,8 +91,8 @@ fn main() {
     //     null(),
     // )));
     let materail_ground = Rc::new(Lambertian::new(Vect3::new(0.8, 0.8, 0.0)));
-    let material_center = Rc::new(Lambertian::new(Vect3::new(0.7, 0.3, 0.3)));
-    let material_left = Rc::new(Metal::new(Vect3::new(0.8, 0.8, 0.8), 0.3));
+    let material_center = Rc::new(Dielectric::new(1.5));
+    let material_left = Rc::new(Dielectric::new(1.5));
     let material_right = Rc::new(Metal::new(Vect3::new(0.8, 0.6, 0.2), 1.0));
 
     world.add(Rc::new(Sphere::new(
