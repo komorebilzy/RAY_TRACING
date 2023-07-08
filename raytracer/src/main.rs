@@ -33,7 +33,7 @@ fn ray_color(r: &Ray, world: &dyn Hittable, depth: i64) -> Vect3 {
     let mut rec = HitRecord::new();
     let infinity = f64::INFINITY;
     if world.hit(r, 0.001, infinity, &mut rec) {
-        let target = rec.p + rec.normal + random_unit_vector();
+        let target = rec.p + random_in_hemisphere(rec.normal);
         ray_color(&Ray::new(rec.p, target - rec.p), world, depth - 1) * 0.5
     } else {
         let unit_direction: Vect3 = unit_vector(r.direction());
