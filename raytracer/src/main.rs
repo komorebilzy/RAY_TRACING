@@ -50,9 +50,8 @@ fn ray_color(r: &Ray, world: &dyn Hittable, depth: i64) -> Vect3 {
         }
     }
 }
-
 fn main() {
-    let path = "output/book1/image15.jpg";
+    let path = "output/book1/image16.jpg";
 
     let aspect_ratio = 16.0 / 9.0;
     let width = 400;
@@ -108,6 +107,11 @@ fn main() {
     world.add(Rc::new(Sphere::new(
         Vect3::new(-1.0, 0.0, -1.0),
         0.5,
+        material_left.clone(),
+    )));
+    world.add(Rc::new(Sphere::new(
+        Vect3::new(-1.0, 0.0, -1.0),
+        -0.4,
         material_left,
     )));
     world.add(Rc::new(Sphere::new(

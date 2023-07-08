@@ -71,11 +71,11 @@ impl Dielectric {
             ir: (index_of_refractiom),
         }
     }
-    // fn reflectance(cosine:f64,ref_idx:f64)->f64{
-    //     let r=(1-ref_idx)/(1+ref_idx);
-    //     r=r*r;
-    //     r+(1-r)*()
-    // }
+    pub fn reflectance(cosine: f64, ref_idx: f64) -> f64 {
+        let mut r = (1.0 - ref_idx) / (1.0 + ref_idx);
+        r = r * r;
+        r + (1.0 - r) * ((1.0 - cosine).powf(5.0))
+    }
 }
 impl Material for Dielectric {
     fn scatter(&self, r_in: Ray, rec: HitRecord) -> Option<Pair<Vect3, Ray>> {
@@ -89,7 +89,9 @@ impl Material for Dielectric {
         let cos_theta = fmin(dot(-unit_direction, rec.normal), 1.0);
         let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
         let cannot_refract = refraction_ratio * sin_theta > 1.0;
-        let direction = if cannot_refract {
+        let direction = if cannot_refract
+            || material::Dielectric::reflectance(cos_theta, refraction_ratio) > random_double()
+        {
             reflect(unit_direction, rec.normal)
         } else {
             refract(unit_direction, rec.normal, refraction_ratio)
