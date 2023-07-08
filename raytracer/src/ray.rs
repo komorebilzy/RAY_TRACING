@@ -5,6 +5,12 @@ pub struct Ray {
     pub b: Vect3,
 }
 impl Ray {
+    // pub fn default() -> Self {
+    //     Self {
+    //         a: (Vect3::default()),
+    //         b: (Vect3::default()),
+    //     }
+    // }
     pub fn new(a: Vect3, b: Vect3) -> Self {
         Self { a: (a), b: (b) }
     }

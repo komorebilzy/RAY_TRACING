@@ -19,6 +19,12 @@ use rtweekend::*;
 mod camear;
 use camear::*;
 
+mod material;
+use material::*;
+
+mod pair;
+use pair::*;
+
 use console::style;
 use image::{ImageBuffer, RgbImage};
 use indicatif::ProgressBar;
@@ -30,20 +36,23 @@ fn ray_color(r: &Ray, world: &dyn Hittable, depth: i64) -> Vect3 {
     if depth <= 0 {
         return Vect3::new(0.0, 0.0, 0.0);
     }
-    let mut rec = HitRecord::new();
     let infinity = f64::INFINITY;
-    if world.hit(r, 0.001, infinity, &mut rec) {
-        let target = rec.p + rec.normal + random_unit_vector();
-        ray_color(&Ray::new(rec.p, target - rec.p), world, depth - 1) * 0.5
-    } else {
-        let unit_direction: Vect3 = unit_vector(r.direction());
-        let t: f64 = (unit_direction.y() + 1.0) * 0.5;
-        Vect3::new(1.0, 1.0, 1.0) * (1.0 - t) + Vect3::new(0.5, 0.7, 1.0) * t
+    let rec = world.hit(r, 0.001, infinity);
+    match rec {
+        Some(x) => match x.mat_ptr.scatter(*r, x.clone()) {
+            Some(x) => x.first * ray_color(&x.second, world, depth - 1),
+            None => Vect3::new(0.0, 0.0, 0.0),
+        },
+        None => {
+            let unit_direction: Vect3 = unit_vector(r.direction());
+            let t: f64 = (unit_direction.y() + 1.0) * 0.5;
+            Vect3::new(1.0, 1.0, 1.0) * (1.0 - t) + Vect3::new(0.5, 0.7, 1.0) * t
+        }
     }
 }
 
 fn main() {
-    let path = "output/book1/image9.jpg";
+    let path = "output/book1/image10.jpg";
 
     let aspect_ratio = 16.0 / 9.0;
     let width = 400;
@@ -71,8 +80,41 @@ fn main() {
         origin - horizontal / 2.0 - vertical / 2.0 - Vect3::new(0.0, 0.0, focal_length);
 
     let mut world = HitableList::new();
-    world.add(Rc::new(Sphere::new(Vect3::new(0.0, 0.0, -1.0), 0.5)));
-    world.add(Rc::new(Sphere::new(Vect3::new(0.0, -100.5, -1.0), 100.0)));
+    // world.add(Rc::new(Sphere::new(
+    //     Vect3::new(0.0, 0.0, -1.0),
+    //     0.5,
+    //     null(),
+    // )));
+    // world.add(Rc::new(Sphere::new(
+    //     Vect3::new(0.0, -100.5, -1.0),
+    //     100.0,
+    //     null(),
+    // )));
+    let materail_ground = Rc::new(Lambertian::new(Vect3::new(0.8, 0.8, 0.0)));
+    let material_center = Rc::new(Lambertian::new(Vect3::new(0.7, 0.3, 0.3)));
+    let material_left = Rc::new(Metal::new(Vect3::new(0.8, 0.8, 0.8)));
+    let material_right = Rc::new(Metal::new(Vect3::new(0.8, 0.6, 0.2)));
+
+    world.add(Rc::new(Sphere::new(
+        Vect3::new(0.0, -100.5, -1.0),
+        100.0,
+        materail_ground,
+    )));
+    world.add(Rc::new(Sphere::new(
+        Vect3::new(0.0, 0.0, -1.0),
+        0.5,
+        material_center,
+    )));
+    world.add(Rc::new(Sphere::new(
+        Vect3::new(-1.0, 0.0, -1.0),
+        0.5,
+        material_left,
+    )));
+    world.add(Rc::new(Sphere::new(
+        Vect3::new(1.0, 0.0, -1.0),
+        0.5,
+        material_right,
+    )));
 
     let cam = Camera::new();
 

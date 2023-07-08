@@ -59,6 +59,10 @@ impl Vect3 {
             random_double_rng(min, max),
         )
     }
+    pub fn near_zero(&self) -> bool {
+        let s = 1e-8;
+        (self.e[0].abs() < s) && (self.e[1] < s) && (self.e[2] < s)
+    }
 }
 
 impl ops::Neg for Vect3 {
@@ -234,3 +238,16 @@ pub fn random_in_unit_sphere() -> Vect3 {
 pub fn random_unit_vector() -> Vect3 {
     unit_vector(random_in_unit_sphere())
 }
+
+pub fn reflect(v: Vect3, n: Vect3) -> Vect3 {
+    v - (n * dot(v, n)) * 2.0
+}
+
+// pub fn random_in_hemisphere(normal: Vect3) -> Vect3 {
+//     let in_unit_sphere = random_in_unit_sphere();
+//     if dot(in_unit_sphere, normal) > 0.0 {
+//         return in_unit_sphere;
+//     } else {
+//         return -in_unit_sphere;
+//     }
+// }
