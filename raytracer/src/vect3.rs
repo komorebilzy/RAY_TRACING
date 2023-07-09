@@ -15,9 +15,9 @@ impl Vect3 {
         Self { e: [e1, e2, e3] }
     }
 
-    // pub fn x(&self) -> f64 {
-    //     self.e[0]
-    // }
+    pub fn x(&self) -> f64 {
+        self.e[0]
+    }
     pub fn y(&self) -> f64 {
         self.e[1]
     }
@@ -273,4 +273,18 @@ pub fn refract(uv: Vect3, n: Vect3, etai_over_etat: f64) -> Vect3 {
     let r_out_perp = (uv + n * cos_theta) * etai_over_etat;
     let r_out_parallel = -n * (1.0 - r_out_perp.squared_length()).abs().sqrt();
     r_out_perp + r_out_parallel
+}
+
+pub fn random_in_unit_disk() -> Vect3 {
+    loop {
+        let p = Vect3::new(
+            random_double_rng(-1.0, 1.0),
+            random_double_rng(-1.0, 1.0),
+            0.0,
+        );
+        if p.squared_length() >= 1.0 {
+            continue;
+        }
+        return p;
+    }
 }

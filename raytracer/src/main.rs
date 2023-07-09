@@ -51,7 +51,7 @@ fn ray_color(r: &Ray, world: &dyn Hittable, depth: i64) -> Vect3 {
     }
 }
 fn main() {
-    let path = "output/book1/image18.jpg";
+    let path = "output/book1/image20.jpg";
 
     let aspect_ratio = 16.0 / 9.0;
     let width = 400;
@@ -108,13 +108,20 @@ fn main() {
         0.5,
         material_right,
     )));
+    let lookfrom = Vect3::new(3.0, 3.0, 2.0);
+    let lookat = Vect3::new(0.0, 0.0, -1.0);
+    let vup = Vect3::new(0.0, 1.0, 0.0);
+    let dis_to_focus = (lookfrom - lookat).length();
+    let aperture = 2.0;
 
     let cam = Camera::new(
-        Vect3::new(-2.0, 2.0, 1.0),
-        Vect3::new(0.0, 0.0, -1.0),
-        Vect3::new(0.0, 1.0, 0.0),
+        lookfrom,
+        lookat,
+        vup,
         20.0,
         aspect_ratio,
+        aperture,
+        dis_to_focus,
     );
 
     for j in 0..height {
