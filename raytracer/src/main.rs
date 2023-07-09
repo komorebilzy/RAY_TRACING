@@ -79,48 +79,48 @@ fn main() {
         origin - horizontal / 2.0 - vertical / 2.0 - Vect3::new(0.0, 0.0, focal_length);
 
     let mut world = HitableList::new();
-    // world.add(Rc::new(Sphere::new(
-    //     Vect3::new(0.0, 0.0, -1.0),
-    //     0.5,
-    //     null(),
-    // )));
-    // world.add(Rc::new(Sphere::new(
-    //     Vect3::new(0.0, -100.5, -1.0),
-    //     100.0,
-    //     null(),
-    // )));
-    let materail_ground = Rc::new(Lambertian::new(Vect3::new(0.8, 0.8, 0.0)));
-    let material_center = Rc::new(Lambertian::new(Vect3::new(0.1, 0.2, 0.5)));
-    let material_left = Rc::new(Dielectric::new(1.5));
-    let material_right = Rc::new(Metal::new(Vect3::new(0.8, 0.6, 0.2), 1.0));
-
+    // let materail_ground = Rc::new(Lambertian::new(Vect3::new(0.8, 0.8, 0.0)));
+    // let material_center = Rc::new(Lambertian::new(Vect3::new(0.1, 0.2, 0.5)));
+    let material_left = Rc::new(Lambertian::new(Vect3::new(0.0, 0.0, 1.0)));
+    let material_right = Rc::new(Lambertian::new(Vect3::new(1.0, 0.0, 0.0)));
+    let r = (std::f64::consts::PI / 4.0).cos();
     world.add(Rc::new(Sphere::new(
-        Vect3::new(0.0, -100.5, -1.0),
-        100.0,
-        materail_ground,
-    )));
-    world.add(Rc::new(Sphere::new(
-        Vect3::new(0.0, 0.0, -1.0),
-        0.5,
-        material_center,
-    )));
-    world.add(Rc::new(Sphere::new(
-        Vect3::new(-1.0, 0.0, -1.0),
-        0.5,
-        material_left.clone(),
-    )));
-    world.add(Rc::new(Sphere::new(
-        Vect3::new(-1.0, 0.0, -1.0),
-        -0.4,
+        Vect3::new(-r, 0.0, -1.0),
+        r,
         material_left,
     )));
     world.add(Rc::new(Sphere::new(
-        Vect3::new(1.0, 0.0, -1.0),
-        0.5,
+        Vect3::new(r, 0.0, -1.0),
+        r,
         material_right,
     )));
+    // world.add(Rc::new(Sphere::new(
+    //     Vect3::new(0.0, -100.5, -1.0),
+    //     100.0,
+    //     materail_ground,
+    // )));
+    // world.add(Rc::new(Sphere::new(
+    //     Vect3::new(0.0, 0.0, -1.0),
+    //     0.5,
+    //     material_center,
+    // )));
+    // world.add(Rc::new(Sphere::new(
+    //     Vect3::new(-1.0, 0.0, -1.0),
+    //     0.5,
+    //     material_left.clone(),
+    // )));
+    // world.add(Rc::new(Sphere::new(
+    //     Vect3::new(-1.0, 0.0, -1.0),
+    //     -0.4,
+    //     material_left,
+    // )));
+    // world.add(Rc::new(Sphere::new(
+    //     Vect3::new(1.0, 0.0, -1.0),
+    //     0.5,
+    //     material_right,
+    // )));
 
-    let cam = Camera::new();
+    let cam = Camera::new(90.0, aspect_ratio);
 
     for j in 0..height {
         for i in 0..width {
