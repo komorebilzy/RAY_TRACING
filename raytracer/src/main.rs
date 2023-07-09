@@ -32,6 +32,62 @@ use indicatif::ProgressBar;
 use std::rc::Rc;
 use std::{fs::File, process::exit};
 
+fn random_scene() -> HitableList {
+    let mut world = HitableList::new();
+    let ground_material = Rc::new(Lambertian::new(Vect3::new(0.5, 0.5, 0.5)));
+    world.add(Rc::new(Sphere::new(
+        Vect3::new(0.0, -1000.0, 0.0),
+        1000.0,
+        ground_material,
+    )));
+    for a in -11..11 {
+        for b in -11..11 {
+            let choose_mat = random_double();
+            let center = Vect3::new(
+                a as f64 + random_double() * 0.9,
+                0.2,
+                b as f64 + 0.9 * random_double(),
+            );
+
+            if (center - Vect3::new(4.0, 0.2, 0.0)).length() > 0.9 {
+                let sphere_material: Rc<dyn Material>;
+                if choose_mat < 0.8 {
+                    let albedo = Vect3::random() * Vect3::random();
+                    sphere_material = Rc::new(Lambertian::new(albedo));
+                    world.add(Rc::new(Sphere::new(center, 0.2, sphere_material)));
+                } else if choose_mat < 0.95 {
+                    let albedo = Vect3::random1(0.5, 1.0);
+                    let fuzz = random_double_rng(0.0, 0.5);
+                    sphere_material = Rc::new(Metal::new(albedo, fuzz));
+                    world.add(Rc::new(Sphere::new(center, 0.2, sphere_material)));
+                } else {
+                    sphere_material = Rc::new(Dielectric::new(1.5));
+                    world.add(Rc::new(Sphere::new(center, 0.2, sphere_material)));
+                }
+            }
+        }
+    }
+    let material1 = Rc::new(Dielectric::new(1.5));
+    world.add(Rc::new(Sphere::new(
+        Vect3::new(0.0, 1.0, 0.0),
+        1.0,
+        material1,
+    )));
+    let material2 = Rc::new(Lambertian::new(Vect3::new(0.4, 0.2, 0.1)));
+    world.add(Rc::new(Sphere::new(
+        Vect3::new(-4.0, 1.0, 0.0),
+        1.0,
+        material2,
+    )));
+    let material3 = Rc::new(Metal::new(Vect3::new(0.7, 0.6, 0.5), 0.0));
+    world.add(Rc::new(Sphere::new(
+        Vect3::new(4.0, 1.0, 0.0),
+        1.0,
+        material3,
+    )));
+    world
+}
+
 fn ray_color(r: &Ray, world: &dyn Hittable, depth: i64) -> Vect3 {
     if depth <= 0 {
         return Vect3::new(0.0, 0.0, 0.0);
@@ -51,13 +107,13 @@ fn ray_color(r: &Ray, world: &dyn Hittable, depth: i64) -> Vect3 {
     }
 }
 fn main() {
-    let path = "output/book1/image20.jpg";
+    let path = "output/book1/image21.jpg";
 
-    let aspect_ratio = 16.0 / 9.0;
-    let width = 400;
+    let aspect_ratio = 3.0 / 2.0;
+    let width = 1200;
     let height = ((width as f64) / aspect_ratio) as u32;
     let quality = 100;
-    let samples_per_pixel = 100;
+    let samples_per_pixel = 500;
     let max_depth = 50;
     let mut img: RgbImage = ImageBuffer::new(width, height);
 
@@ -77,42 +133,12 @@ fn main() {
     let vertical = Vect3::new(0.0, viewport_height, 0.0);
     let _lower_left_corner =
         origin - horizontal / 2.0 - vertical / 2.0 - Vect3::new(0.0, 0.0, focal_length);
-
-    let mut world = HitableList::new();
-    let materail_ground = Rc::new(Lambertian::new(Vect3::new(0.8, 0.8, 0.0)));
-    let material_center = Rc::new(Lambertian::new(Vect3::new(0.1, 0.2, 0.5)));
-    let material_left = Rc::new(Dielectric::new(1.5));
-    let material_right = Rc::new(Metal::new(Vect3::new(0.8, 0.6, 0.2), 0.0));
-    world.add(Rc::new(Sphere::new(
-        Vect3::new(0.0, -100.5, -1.0),
-        100.0,
-        materail_ground,
-    )));
-    world.add(Rc::new(Sphere::new(
-        Vect3::new(0.0, 0.0, -1.0),
-        0.5,
-        material_center,
-    )));
-    world.add(Rc::new(Sphere::new(
-        Vect3::new(-1.0, 0.0, -1.0),
-        0.5,
-        material_left.clone(),
-    )));
-    world.add(Rc::new(Sphere::new(
-        Vect3::new(-1.0, 0.0, -1.0),
-        -0.45,
-        material_left,
-    )));
-    world.add(Rc::new(Sphere::new(
-        Vect3::new(1.0, 0.0, -1.0),
-        0.5,
-        material_right,
-    )));
-    let lookfrom = Vect3::new(3.0, 3.0, 2.0);
-    let lookat = Vect3::new(0.0, 0.0, -1.0);
+    let world = random_scene();
+    let lookfrom = Vect3::new(13.0, 2.0, 3.0);
+    let lookat = Vect3::new(0.0, 0.0, 0.0);
     let vup = Vect3::new(0.0, 1.0, 0.0);
-    let dis_to_focus = (lookfrom - lookat).length();
-    let aperture = 2.0;
+    let dis_to_focus = 10.0;
+    let aperture = 0.1;
 
     let cam = Camera::new(
         lookfrom,
