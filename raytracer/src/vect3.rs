@@ -226,6 +226,14 @@ pub fn dot(v1: Vect3, v2: Vect3) -> f64 {
     result
 }
 
+pub fn cross(u: Vect3, v: Vect3) -> Vect3 {
+    Vect3::new(
+        u.e[1] * v.e[2] - u.e[2] * v.e[1],
+        u.e[2] * v.e[0] - u.e[0] * v.e[2],
+        u.e[0] * v.e[1] - u.e[1] * v.e[0],
+    )
+}
+
 pub fn random_in_unit_sphere() -> Vect3 {
     loop {
         let p = Vect3::random1(-1.0, 1.0);
