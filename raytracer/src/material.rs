@@ -5,10 +5,15 @@ pub trait Material {
 }
 
 pub struct Lambertian {
-    pub albedo: Vect3,
+    pub albedo: Rc<dyn Texture>,
 }
 impl Lambertian {
-    pub fn new(a: Vect3) -> Self {
+    pub fn new1(a: Vect3) -> Self {
+        Self {
+            albedo: (Rc::new(SolidColor::new1(a))),
+        }
+    }
+    pub fn new2(a: Rc<dyn Texture>) -> Self {
         Self { albedo: (a) }
     }
 }
@@ -19,7 +24,7 @@ impl Material for Lambertian {
             scatter_direction = rec.normal;
         }
         let scattered = Ray::new(rec.p, scatter_direction, _r_in.time());
-        let attenuation = self.albedo;
+        let attenuation = self.albedo.value(rec.u, rec.v, rec.p);
         let ans = Pair::new(attenuation, scattered);
         Some(ans)
     }

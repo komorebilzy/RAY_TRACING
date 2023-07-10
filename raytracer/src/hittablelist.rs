@@ -2,7 +2,7 @@ use crate::*;
 use std::option::Option;
 use std::rc::Rc;
 pub struct HitableList {
-    objects: Vec<Rc<dyn Hittable>>,
+    pub objects: Vec<Rc<dyn Hittable>>,
 }
 impl HitableList {
     pub fn new() -> Self {
@@ -29,6 +29,29 @@ impl Hittable for HitableList {
             }
         }
         rec
+    }
+    fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
+        if self.objects.is_empty() {
+            return None;
+        }
+        let mut output_box = Aabb::new(Vect3::default(), Vect3::default());
+        let mut first_box = true;
+        for object in &self.objects {
+            match object.bounding_box(time0, time1) {
+                None => {
+                    return None;
+                }
+                Some(x) => {
+                    output_box = if first_box {
+                        x
+                    } else {
+                        surrounding_box(output_box, x)
+                    };
+                    first_box = false;
+                }
+            }
+        }
+        Some(output_box)
     }
 }
 

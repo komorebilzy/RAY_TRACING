@@ -28,6 +28,15 @@ use pair::*;
 mod moving_sphere;
 use moving_sphere::*;
 
+mod aabb;
+use aabb::*;
+
+// mod bvh;
+// use bvh::*;
+
+mod texture;
+use texture::*;
+
 use console::style;
 use image::{ImageBuffer, RgbImage};
 use indicatif::ProgressBar;
@@ -37,11 +46,15 @@ use std::{fs::File, process::exit};
 
 fn random_scene() -> HitableList {
     let mut world = HitableList::new();
-    let ground_material = Rc::new(Lambertian::new(Vect3::new(0.5, 0.5, 0.5)));
+    let checker = Rc::new(CheckerTexture::new2(
+        Vect3::new(0.2, 0.3, 0.1),
+        Vect3::new(0.9, 0.9, 0.9),
+    ));
+    // let ground_material = Rc::new(Lambertian::new(Vect3::new(0.5, 0.5, 0.5)));
     world.add(Rc::new(Sphere::new(
         Vect3::new(0.0, -1000.0, 0.0),
         1000.0,
-        ground_material,
+        Rc::new(Lambertian::new2(checker)),
     )));
     for a in -11..11 {
         for b in -11..11 {
@@ -56,7 +69,7 @@ fn random_scene() -> HitableList {
                 let sphere_material: Rc<dyn Material>;
                 if choose_mat < 0.8 {
                     let albedo = Vect3::random() * Vect3::random();
-                    sphere_material = Rc::new(Lambertian::new(albedo));
+                    sphere_material = Rc::new(Lambertian::new1(albedo));
                     let center2 = center + Vect3::new(0.0, random_double_rng(0.0, 0.5), 0.0);
                     world.add(Rc::new(MovingSphere::new(
                         center,
@@ -84,7 +97,7 @@ fn random_scene() -> HitableList {
         1.0,
         material1,
     )));
-    let material2 = Rc::new(Lambertian::new(Vect3::new(0.4, 0.2, 0.1)));
+    let material2 = Rc::new(Lambertian::new1(Vect3::new(0.4, 0.2, 0.1)));
     world.add(Rc::new(Sphere::new(
         Vect3::new(-4.0, 1.0, 0.0),
         1.0,
@@ -118,7 +131,7 @@ fn ray_color(r: &Ray, world: &dyn Hittable, depth: i64) -> Vect3 {
     }
 }
 fn main() {
-    let path = "output/book1/image21.jpg";
+    let path = "output/book2/image2.jpg";
 
     let aspect_ratio = 16.0 / 9.0;
     let width = 400;

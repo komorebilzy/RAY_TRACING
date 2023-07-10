@@ -21,9 +21,9 @@ impl Vect3 {
     pub fn y(&self) -> f64 {
         self.e[1]
     }
-    // pub fn z(&self) -> f64 {
-    //     self.e[2]
-    // }
+    pub fn z(&self) -> f64 {
+        self.e[2]
+    }
     // fn r(&self) -> f64 {
     //     self.e[0]
     // }

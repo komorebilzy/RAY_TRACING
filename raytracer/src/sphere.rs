@@ -13,6 +13,14 @@ impl Sphere {
             mat_ptr: (m),
         }
     }
+    pub fn get_sphere_uv(p: Vect3) -> (f64, f64) {
+        let theta = (-p.y()).acos();
+        let phi = (-p.z()).atan2(p.x()) + std::f64::consts::PI;
+        (
+            phi / (2.0 * std::f64::consts::PI),
+            theta / std::f64::consts::PI,
+        )
+    }
 }
 impl Hittable for Sphere {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
@@ -38,6 +46,14 @@ impl Hittable for Sphere {
         let mut rec = HitRecord::new(t, p, &self.mat_ptr);
         let outward_normal: Vect3 = (p - self.center) / self.radius;
         rec.set_face_normal(r, outward_normal);
+        (rec.u, rec.v) = Sphere::get_sphere_uv(outward_normal);
         Some(rec)
+    }
+    fn bounding_box(&self, _time0: f64, _time1: f64) -> Option<Aabb> {
+        let output_box = Aabb {
+            minimum: (self.center - Vect3::new(self.radius, self.radius, self.radius)),
+            maximum: (self.center + Vect3::new(self.radius, self.radius, self.radius)),
+        };
+        Some(output_box)
     }
 }

@@ -59,4 +59,16 @@ impl Hittable for MovingSphere {
         rec.set_face_normal(r, outward_normal);
         Some(rec)
     }
+    fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
+        let box0 = Aabb {
+            minimum: (self.center(time0) - Vect3::new(self.radius, self.radius, self.radius)),
+            maximum: (self.center(time0) + Vect3::new(self.radius, self.radius, self.radius)),
+        };
+        let box1 = Aabb {
+            minimum: (self.center(time1) - Vect3::new(self.radius, self.radius, self.radius)),
+            maximum: (self.center(time1) + Vect3::new(self.radius, self.radius, self.radius)),
+        };
+        let output_box = surrounding_box(box0, box1);
+        Some(output_box)
+    }
 }
