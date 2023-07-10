@@ -25,8 +25,8 @@ use material::*;
 mod pair;
 use pair::*;
 
-mod moving_sphere;
-use moving_sphere::*;
+// mod moving_sphere;
+// use moving_sphere::*;
 
 mod aabb;
 use aabb::*;
@@ -44,74 +44,92 @@ use indicatif::ProgressBar;
 use std::rc::Rc;
 use std::{fs::File, process::exit};
 
-fn random_scene() -> HitableList {
-    let mut world = HitableList::new();
+// fn random_scene() -> HitableList {
+//     let mut world = HitableList::new();
+//     let checker = Rc::new(CheckerTexture::new2(
+//         Vect3::new(0.2, 0.3, 0.1),
+//         Vect3::new(0.9, 0.9, 0.9),
+//     ));
+//     // let ground_material = Rc::new(Lambertian::new(Vect3::new(0.5, 0.5, 0.5)));
+//     world.add(Rc::new(Sphere::new(
+//         Vect3::new(0.0, -1000.0, 0.0),
+//         1000.0,
+//         Rc::new(Lambertian::new2(checker)),
+//     )));
+//     for a in -11..11 {
+//         for b in -11..11 {
+//             let choose_mat = random_double();
+//             let center = Vect3::new(
+//                 a as f64 + random_double() * 0.9,
+//                 0.2,
+//                 b as f64 + 0.9 * random_double(),
+//             );
+
+//             if (center - Vect3::new(4.0, 0.2, 0.0)).length() > 0.9 {
+//                 let sphere_material: Rc<dyn Material>;
+//                 if choose_mat < 0.8 {
+//                     let albedo = Vect3::random() * Vect3::random();
+//                     sphere_material = Rc::new(Lambertian::new1(albedo));
+//                     let center2 = center + Vect3::new(0.0, random_double_rng(0.0, 0.5), 0.0);
+//                     world.add(Rc::new(MovingSphere::new(
+//                         center,
+//                         center2,
+//                         0.0,
+//                         1.0,
+//                         0.2,
+//                         sphere_material,
+//                     )));
+//                 } else if choose_mat < 0.95 {
+//                     let albedo = Vect3::random1(0.5, 1.0);
+//                     let fuzz = random_double_rng(0.0, 0.5);
+//                     sphere_material = Rc::new(Metal::new(albedo, fuzz));
+//                     world.add(Rc::new(Sphere::new(center, 0.2, sphere_material)));
+//                 } else {
+//                     sphere_material = Rc::new(Dielectric::new(1.5));
+//                     world.add(Rc::new(Sphere::new(center, 0.2, sphere_material)));
+//                 }
+//             }
+//         }
+//     }
+//     let material1 = Rc::new(Dielectric::new(1.5));
+//     world.add(Rc::new(Sphere::new(
+//         Vect3::new(0.0, 1.0, 0.0),
+//         1.0,
+//         material1,
+//     )));
+//     let material2 = Rc::new(Lambertian::new1(Vect3::new(0.4, 0.2, 0.1)));
+//     world.add(Rc::new(Sphere::new(
+//         Vect3::new(-4.0, 1.0, 0.0),
+//         1.0,
+//         material2,
+//     )));
+//     let material3 = Rc::new(Metal::new(Vect3::new(0.7, 0.6, 0.5), 0.0));
+//     world.add(Rc::new(Sphere::new(
+//         Vect3::new(4.0, 1.0, 0.0),
+//         1.0,
+//         material3,
+//     )));
+//     world
+// }
+
+fn two_spheres() -> HitableList {
+    let mut objects = HitableList::new();
     let checker = Rc::new(CheckerTexture::new2(
         Vect3::new(0.2, 0.3, 0.1),
         Vect3::new(0.9, 0.9, 0.9),
     ));
-    // let ground_material = Rc::new(Lambertian::new(Vect3::new(0.5, 0.5, 0.5)));
-    world.add(Rc::new(Sphere::new(
-        Vect3::new(0.0, -1000.0, 0.0),
-        1000.0,
+    objects.add(Rc::new(Sphere::new(
+        Vect3::new(0.0, -10.0, 0.0),
+        10.0,
+        Rc::new(Lambertian::new2(checker.clone())),
+    )));
+    objects.add(Rc::new(Sphere::new(
+        Vect3::new(0.0, 10.0, 0.0),
+        10.0,
         Rc::new(Lambertian::new2(checker)),
     )));
-    for a in -11..11 {
-        for b in -11..11 {
-            let choose_mat = random_double();
-            let center = Vect3::new(
-                a as f64 + random_double() * 0.9,
-                0.2,
-                b as f64 + 0.9 * random_double(),
-            );
-
-            if (center - Vect3::new(4.0, 0.2, 0.0)).length() > 0.9 {
-                let sphere_material: Rc<dyn Material>;
-                if choose_mat < 0.8 {
-                    let albedo = Vect3::random() * Vect3::random();
-                    sphere_material = Rc::new(Lambertian::new1(albedo));
-                    let center2 = center + Vect3::new(0.0, random_double_rng(0.0, 0.5), 0.0);
-                    world.add(Rc::new(MovingSphere::new(
-                        center,
-                        center2,
-                        0.0,
-                        1.0,
-                        0.2,
-                        sphere_material,
-                    )));
-                } else if choose_mat < 0.95 {
-                    let albedo = Vect3::random1(0.5, 1.0);
-                    let fuzz = random_double_rng(0.0, 0.5);
-                    sphere_material = Rc::new(Metal::new(albedo, fuzz));
-                    world.add(Rc::new(Sphere::new(center, 0.2, sphere_material)));
-                } else {
-                    sphere_material = Rc::new(Dielectric::new(1.5));
-                    world.add(Rc::new(Sphere::new(center, 0.2, sphere_material)));
-                }
-            }
-        }
-    }
-    let material1 = Rc::new(Dielectric::new(1.5));
-    world.add(Rc::new(Sphere::new(
-        Vect3::new(0.0, 1.0, 0.0),
-        1.0,
-        material1,
-    )));
-    let material2 = Rc::new(Lambertian::new1(Vect3::new(0.4, 0.2, 0.1)));
-    world.add(Rc::new(Sphere::new(
-        Vect3::new(-4.0, 1.0, 0.0),
-        1.0,
-        material2,
-    )));
-    let material3 = Rc::new(Metal::new(Vect3::new(0.7, 0.6, 0.5), 0.0));
-    world.add(Rc::new(Sphere::new(
-        Vect3::new(4.0, 1.0, 0.0),
-        1.0,
-        material3,
-    )));
-    world
+    objects
 }
-
 fn ray_color(r: &Ray, world: &dyn Hittable, depth: i64) -> Vect3 {
     if depth <= 0 {
         return Vect3::new(0.0, 0.0, 0.0);
@@ -131,7 +149,7 @@ fn ray_color(r: &Ray, world: &dyn Hittable, depth: i64) -> Vect3 {
     }
 }
 fn main() {
-    let path = "output/book2/image2.jpg";
+    let path = "output/book2/image3.jpg";
 
     let aspect_ratio = 16.0 / 9.0;
     let width = 400;
@@ -157,18 +175,27 @@ fn main() {
     let vertical = Vect3::new(0.0, viewport_height, 0.0);
     let _lower_left_corner =
         origin - horizontal / 2.0 - vertical / 2.0 - Vect3::new(0.0, 0.0, focal_length);
-    let world = random_scene();
 
+    let world = two_spheres();
     let lookfrom = Vect3::new(13.0, 2.0, 3.0);
     let lookat = Vect3::new(0.0, 0.0, 0.0);
+    let vfov = 20.0;
+    let aperture = 0.0;
     let vup = Vect3::new(0.0, 1.0, 0.0);
     let dis_to_focus = 10.0;
-    let aperture = 0.1;
+
+    // let world = random_scene();
+
+    // let lookfrom = Vect3::new(13.0, 2.0, 3.0);
+    // let lookat = Vect3::new(0.0, 0.0, 0.0);
+    // let vup = Vect3::new(0.0, 1.0, 0.0);
+    // let dis_to_focus = 10.0;
+    // let aperture = 0.1;
 
     let cam = Camera::new(
         (lookfrom, lookat),
         vup,
-        20.0,
+        vfov,
         aspect_ratio,
         aperture,
         dis_to_focus,

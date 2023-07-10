@@ -48,9 +48,9 @@ impl Vect3 {
     //     self.e[1] *= k;
     //     self.e[2] *= k;
     // }
-    pub fn random() -> Vect3 {
-        Vect3::new(random_double(), random_double(), random_double())
-    }
+    // pub fn random() -> Vect3 {
+    //     Vect3::new(random_double(), random_double(), random_double())
+    // }
 
     pub fn random1(min: f64, max: f64) -> Vect3 {
         Vect3::new(

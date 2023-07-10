@@ -8,11 +8,11 @@ pub struct Lambertian {
     pub albedo: Rc<dyn Texture>,
 }
 impl Lambertian {
-    pub fn new1(a: Vect3) -> Self {
-        Self {
-            albedo: (Rc::new(SolidColor::new1(a))),
-        }
-    }
+    // pub fn new1(a: Vect3) -> Self {
+    //     Self {
+    //         albedo: (Rc::new(SolidColor::new1(a))),
+    //     }
+    // }
     pub fn new2(a: Rc<dyn Texture>) -> Self {
         Self { albedo: (a) }
     }
@@ -36,12 +36,12 @@ pub struct Metal {
 }
 
 impl Metal {
-    pub fn new(a: Vect3, f: f64) -> Self {
-        Self {
-            albedo: (a),
-            fuzz: (if f < 1.0 { f } else { 1.0 }),
-        }
-    }
+    // pub fn new(a: Vect3, f: f64) -> Self {
+    //     Self {
+    //         albedo: (a),
+    //         fuzz: (if f < 1.0 { f } else { 1.0 }),
+    //     }
+    // }
 }
 
 impl Material for Metal {
@@ -75,11 +75,11 @@ pub struct Dielectric {
     pub ir: f64,
 }
 impl Dielectric {
-    pub fn new(index_of_refractiom: f64) -> Self {
-        Self {
-            ir: (index_of_refractiom),
-        }
-    }
+    // pub fn new(index_of_refractiom: f64) -> Self {
+    //     Self {
+    //         ir: (index_of_refractiom),
+    //     }
+    // }
     pub fn reflectance(cosine: f64, ref_idx: f64) -> f64 {
         let mut r = (1.0 - ref_idx) / (1.0 + ref_idx);
         r = r * r;
