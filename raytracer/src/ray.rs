@@ -3,6 +3,7 @@ use crate::*;
 pub struct Ray {
     pub a: Vect3,
     pub b: Vect3,
+    pub tm: f64,
 }
 impl Ray {
     // pub fn default() -> Self {
@@ -11,8 +12,12 @@ impl Ray {
     //         b: (Vect3::default()),
     //     }
     // }
-    pub fn new(a: Vect3, b: Vect3) -> Self {
-        Self { a: (a), b: (b) }
+    pub fn new(a: Vect3, b: Vect3, t: f64) -> Self {
+        Self {
+            a: (a),
+            b: (b),
+            tm: (t),
+        }
     }
     pub fn origin(&self) -> Vect3 {
         self.a
@@ -22,5 +27,8 @@ impl Ray {
     }
     pub fn point_at_parameter(self, t: f64) -> Vect3 {
         self.a + self.b * t
+    }
+    pub fn time(&self) -> f64 {
+        self.tm
     }
 }

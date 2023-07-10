@@ -25,6 +25,9 @@ use material::*;
 mod pair;
 use pair::*;
 
+mod moving_sphere;
+use moving_sphere::*;
+
 use console::style;
 use image::{ImageBuffer, RgbImage};
 use indicatif::ProgressBar;
@@ -54,7 +57,15 @@ fn random_scene() -> HitableList {
                 if choose_mat < 0.8 {
                     let albedo = Vect3::random() * Vect3::random();
                     sphere_material = Rc::new(Lambertian::new(albedo));
-                    world.add(Rc::new(Sphere::new(center, 0.2, sphere_material)));
+                    let center2 = center + Vect3::new(0.0, random_double_rng(0.0, 0.5), 0.0);
+                    world.add(Rc::new(MovingSphere::new(
+                        center,
+                        center2,
+                        0.0,
+                        1.0,
+                        0.2,
+                        sphere_material,
+                    )));
                 } else if choose_mat < 0.95 {
                     let albedo = Vect3::random1(0.5, 1.0);
                     let fuzz = random_double_rng(0.0, 0.5);
@@ -109,11 +120,11 @@ fn ray_color(r: &Ray, world: &dyn Hittable, depth: i64) -> Vect3 {
 fn main() {
     let path = "output/book1/image21.jpg";
 
-    let aspect_ratio = 3.0 / 2.0;
-    let width = 1200;
+    let aspect_ratio = 16.0 / 9.0;
+    let width = 400;
     let height = ((width as f64) / aspect_ratio) as u32;
     let quality = 100;
-    let samples_per_pixel = 500;
+    let samples_per_pixel = 100;
     let max_depth = 50;
     let mut img: RgbImage = ImageBuffer::new(width, height);
 
@@ -134,6 +145,7 @@ fn main() {
     let _lower_left_corner =
         origin - horizontal / 2.0 - vertical / 2.0 - Vect3::new(0.0, 0.0, focal_length);
     let world = random_scene();
+
     let lookfrom = Vect3::new(13.0, 2.0, 3.0);
     let lookat = Vect3::new(0.0, 0.0, 0.0);
     let vup = Vect3::new(0.0, 1.0, 0.0);
@@ -141,13 +153,13 @@ fn main() {
     let aperture = 0.1;
 
     let cam = Camera::new(
-        lookfrom,
-        lookat,
+        (lookfrom, lookat),
         vup,
         20.0,
         aspect_ratio,
         aperture,
         dis_to_focus,
+        (0.0, 1.0),
     );
 
     for j in 0..height {
