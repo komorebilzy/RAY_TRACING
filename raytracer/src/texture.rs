@@ -7,9 +7,9 @@ pub struct SolidColor {
     pub color_value: Vect3,
 }
 impl SolidColor {
-    pub fn new1(c: Vect3) -> Self {
-        Self { color_value: (c) }
-    }
+    // pub fn new1(c: Vect3) -> Self {
+    //     Self { color_value: (c) }
+    // }
     // pub fn new2(red: f64, green: f64, blue: f64) -> Self {
     //     Self {
     //         color_value: (Vect3::new(red, green, blue)),
@@ -35,12 +35,12 @@ impl CheckerTexture {
     //         even: (_even),
     //     }
     // }
-    pub fn new2(c1: Vect3, c2: Vect3) -> Self {
-        Self {
-            odd: (Rc::new(SolidColor::new1(c2))),
-            even: (Rc::new(SolidColor::new1(c1))),
-        }
-    }
+    // pub fn new2(c1: Vect3, c2: Vect3) -> Self {
+    //     Self {
+    //         odd: (Rc::new(SolidColor::new1(c2))),
+    //         even: (Rc::new(SolidColor::new1(c1))),
+    //     }
+    // }
 }
 impl Texture for CheckerTexture {
     fn value(&self, u: f64, v: f64, p: Vect3) -> Vect3 {
@@ -50,5 +50,22 @@ impl Texture for CheckerTexture {
         } else {
             self.even.value(u, v, p)
         }
+    }
+}
+
+pub struct NoiseTexture {
+    pub noise: Perlin,
+}
+
+impl NoiseTexture {
+    pub fn new() -> Self {
+        Self {
+            noise: (Perlin::new()),
+        }
+    }
+}
+impl Texture for NoiseTexture {
+    fn value(&self, _u: f64, _v: f64, p: Vect3) -> Vect3 {
+        Vect3::new(1.0, 1.0, 1.0) * self.noise.noise(p)
     }
 }
