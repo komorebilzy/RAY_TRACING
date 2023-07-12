@@ -31,9 +31,12 @@ impl Perlin {
     //         [(self.perm_x[i as usize] ^ self.perm_y[j as usize] ^ self.perm_z[k as usize]) as usize]
     // }
     pub fn noise(&self, p: Vect3) -> f64 {
-        let u = p.x() - p.x().floor();
-        let v = p.y() - p.y().floor();
-        let w = p.z() - p.z().floor();
+        let mut u = p.x() - p.x().floor();
+        let mut v = p.y() - p.y().floor();
+        let mut w = p.z() - p.z().floor();
+        u = u * u * (3.0 - 2.0 * u);
+        v = v * v * (3.0 - 2.0 * v);
+        w = w * w * (3.0 - 2.0 * w);
         let i = p.x().floor() as i64;
         let j = p.y().floor() as i64;
         let k = p.z().floor() as i64;
