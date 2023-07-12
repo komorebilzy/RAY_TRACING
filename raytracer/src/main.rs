@@ -136,7 +136,7 @@ use std::{fs::File, process::exit};
 
 fn two_perlin_spheres() -> HitableList {
     let mut objects = HitableList::new();
-    let pertext = Rc::new(NoiseTexture::new());
+    let pertext = Rc::new(NoiseTexture::new2(4.0));
 
     objects.add(Rc::new(Sphere::new(
         Vect3::new(0.0, -1000.0, 0.0),
@@ -170,7 +170,7 @@ fn ray_color(r: &Ray, world: &dyn Hittable, depth: i64) -> Vect3 {
     }
 }
 fn main() {
-    let path = "output/book2/image4.jpg";
+    let path = "output/book2/image9.jpg";
 
     let aspect_ratio = 16.0 / 9.0;
     let width = 400;
