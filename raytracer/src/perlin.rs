@@ -1,4 +1,5 @@
 use crate::*;
+// use rand::prelude::SliceRandom;
 pub struct Perlin {
     pub point_count: i64,
     pub ranfloat: Vec<f64>,
@@ -8,10 +9,11 @@ pub struct Perlin {
 }
 impl Perlin {
     pub fn noise(&self, p: Vect3) -> f64 {
-        let i = (4.0 * p.x()) as usize & 255;
-        let j = (4.0 * p.y()) as usize & 255;
-        let k = (4.0 * p.z()) as usize & 255;
-        self.ranfloat[(self.perm_x[i] ^ self.perm_y[j] ^ self.perm_z[k]) as usize]
+        let i = (4.0 * p.x()) as i64 & 255;
+        let j = (4.0 * p.y()) as i64 & 255;
+        let k = (4.0 * p.z()) as i64 & 255;
+        self.ranfloat
+            [(self.perm_x[i as usize] ^ self.perm_y[j as usize] ^ self.perm_z[k as usize]) as usize]
     }
 
     pub fn permute(p: &mut [i64], n: i64) {
@@ -27,6 +29,7 @@ impl Perlin {
             p.push(i as i64);
         }
         Perlin::permute(&mut p, 256);
+        // p.shuffle(&mut rand::thread_rng());
         p
     }
 
