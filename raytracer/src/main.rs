@@ -220,14 +220,7 @@ fn cornell_box() -> HitableList {
         555.0,
         white.clone(),
     )));
-    objects.add(Rc::new(XyRect::new(
-        0.0,
-        555.0,
-        0.0,
-        555.0,
-        555.0,
-        white.clone(),
-    )));
+    objects.add(Rc::new(XyRect::new(0.0, 555.0, 0.0, 555.0, 555.0, white)));
     // objects.add(Rc::new(Box::new(
     //     Vect3::new(130.0, 0.0, 65.0),
     //     Vect3::new(295.0, 165.0, 230.0),
