@@ -11,14 +11,14 @@ pub struct Lambertian {
     pub albedo: Rc<dyn Texture>,
 }
 impl Lambertian {
-    pub fn new1(a: Vect3) -> Self {
-        Self {
-            albedo: (Rc::new(SolidColor::new1(a))),
-        }
-    }
-    // pub fn new2(a: Rc<dyn Texture>) -> Self {
-    //     Self { albedo: (a) }
+    // pub fn new1(a: Vect3) -> Self {
+    //     Self {
+    //         albedo: (Rc::new(SolidColor::new1(a))),
+    //     }
     // }
+    pub fn new2(a: Rc<dyn Texture>) -> Self {
+        Self { albedo: (a) }
+    }
 }
 impl Material for Lambertian {
     fn scatter(&self, _r_in: Ray, rec: HitRecord) -> Option<Pair<Vect3, Ray>> {

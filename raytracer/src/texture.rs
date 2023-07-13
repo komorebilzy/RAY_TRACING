@@ -67,12 +67,12 @@ impl NoiseTexture {
     //         scale: 0.0,
     //     }
     // }
-    // pub fn new2(sc: f64) -> Self {
-    //     Self {
-    //         noise: (Perlin::new()),
-    //         scale: (sc),
-    //     }
-    // }
+    pub fn new2(sc: f64) -> Self {
+        Self {
+            noise: (Perlin::new()),
+            scale: (sc),
+        }
+    }
 }
 impl Texture for NoiseTexture {
     fn value(&self, _u: f64, _v: f64, p: Vect3) -> Vect3 {
