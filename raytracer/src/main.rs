@@ -314,7 +314,7 @@ fn cornell_smoke() -> HitableList {
     ));
     box1 = Rc::new(RotateY::new(box1, 15.0));
     box1 = Rc::new(Translate::new(box1, Vect3::new(265.0, 0.0, 295.0)));
-    objects.add(box1.clone());
+    // objects.add(box1.clone());
 
     let mut box2: Rc<dyn Hittable> = Rc::new(Box::new(
         Vect3::new(0.0, 0.0, 0.0),
@@ -323,7 +323,7 @@ fn cornell_smoke() -> HitableList {
     ));
     box2 = Rc::new(RotateY::new(box2, -18.0));
     box2 = Rc::new(Translate::new(box2, Vect3::new(130.0, 0.0, 65.0)));
-    objects.add(box2.clone());
+    // objects.add(box2.clone());
 
     objects.add(Rc::new(ConstantMedium::new2(
         box1,

@@ -23,7 +23,7 @@ impl ConstantMedium {
 impl Hittable for ConstantMedium {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let enable_debug = false;
-        let debugging = enable_debug && random_double() < 0.00001;
+        let debugging = enable_debug && (random_double() < 0.00001);
         match self.boundary.hit(r, -f64::INFINITY, f64::INFINITY) {
             Some(x) => match self.boundary.hit(r, x.t + 0.0001, f64::INFINITY) {
                 Some(y) => {
