@@ -46,6 +46,9 @@ use aarect::*;
 mod bbox;
 use bbox::*;
 
+mod constant_medium;
+use constant_medium::*;
+
 use console::style;
 use image::{ImageBuffer, RgbImage};
 use indicatif::ProgressBar;
@@ -193,23 +196,89 @@ use std::{fs::File, process::exit};
 //     )));
 //     objects
 // }
-fn cornell_box() -> HitableList {
+// fn cornell_box() -> HitableList {
+//     let mut objects = HitableList::new();
+//     let red = Rc::new(Lambertian::new1(Vect3::new(0.65, 0.05, 0.05)));
+//     let white = Rc::new(Lambertian::new1(Vect3::new(0.73, 0.73, 0.73)));
+//     let green = Rc::new(Lambertian::new1(Vect3::new(0.12, 0.45, 0.15)));
+//     let light = Rc::new(DiffuseLight::new2(Vect3::new(15.0, 15.0, 15.0)));
+//     objects.add(Rc::new(YzRect::new(0.0, 555.0, 0.0, 555.0, 555.0, green)));
+//     objects.add(Rc::new(YzRect::new(0.0, 555.0, 0.0, 555.0, 0.0, red)));
+//     objects.add(Rc::new(XzRect::new(
+//         213.0, 343.0, 227.0, 332.0, 554.0, light,
+//     )));
+//     objects.add(Rc::new(XzRect::new(
+//         0.0,
+//         555.0,
+//         0.0,
+//         555.0,
+//         0.0,
+//         white.clone(),
+//     )));
+//     objects.add(Rc::new(XzRect::new(
+//         0.0,
+//         555.0,
+//         0.0,
+//         555.0,
+//         555.0,
+//         white.clone(),
+//     )));
+//     objects.add(Rc::new(XyRect::new(
+//         0.0,
+//         555.0,
+//         0.0,
+//         555.0,
+//         555.0,
+//         white.clone(),
+//     )));
+//     objects.add(Rc::new(Box::new(
+//         Vect3::new(130.0, 0.0, 65.0),
+//         Vect3::new(295.0, 165.0, 230.0),
+//         white.clone(),
+//     )));
+//     objects.add(Rc::new(Box::new(
+//         Vect3::new(265.0, 0.0, 295.0),
+//         Vect3::new(430.0, 330.0, 460.0),
+//         white.clone(),
+//     )));
+//     let mut box1: Rc<dyn Hittable> = Rc::new(Box::new(
+//         Vect3::new(0.0, 0.0, 0.0),
+//         Vect3::new(165.0, 330.0, 165.0),
+//         white.clone(),
+//     ));
+//     box1 = Rc::new(RotateY::new(box1, 15.0));
+//     box1 = Rc::new(Translate::new(box1, Vect3::new(265.0, 0.0, 295.0)));
+//     objects.add(box1);
+
+//     let mut box2: Rc<dyn Hittable> = Rc::new(Box::new(
+//         Vect3::new(0.0, 0.0, 0.0),
+//         Vect3::new(165.0, 165.0, 165.0),
+//         white,
+//     ));
+//     box2 = Rc::new(RotateY::new(box2, -18.0));
+//     box2 = Rc::new(Translate::new(box2, Vect3::new(130.0, 0.0, 65.0)));
+//     objects.add(box2);
+
+//     objects
+// }
+
+fn cornell_smoke() -> HitableList {
     let mut objects = HitableList::new();
     let red = Rc::new(Lambertian::new1(Vect3::new(0.65, 0.05, 0.05)));
     let white = Rc::new(Lambertian::new1(Vect3::new(0.73, 0.73, 0.73)));
     let green = Rc::new(Lambertian::new1(Vect3::new(0.12, 0.45, 0.15)));
-    let light = Rc::new(DiffuseLight::new2(Vect3::new(15.0, 15.0, 15.0)));
+    let light = Rc::new(DiffuseLight::new2(Vect3::new(7.0, 7.0, 7.0)));
     objects.add(Rc::new(YzRect::new(0.0, 555.0, 0.0, 555.0, 555.0, green)));
     objects.add(Rc::new(YzRect::new(0.0, 555.0, 0.0, 555.0, 0.0, red)));
     objects.add(Rc::new(XzRect::new(
-        213.0, 343.0, 227.0, 332.0, 554.0, light,
+        113.0, 443.0, 127.0, 432.0, 554.0, light,
     )));
     objects.add(Rc::new(XzRect::new(
         0.0,
         555.0,
         0.0,
         555.0,
-        0.0,
+        555.0,
         white.clone(),
     )));
     objects.add(Rc::new(XzRect::new(
@@ -217,7 +286,7 @@ fn cornell_box() -> HitableList {
         555.0,
         0.0,
         555.0,
-        555.0,
+        0.0,
         white.clone(),
     )));
     objects.add(Rc::new(XyRect::new(
@@ -228,16 +297,16 @@ fn cornell_box() -> HitableList {
         555.0,
         white.clone(),
     )));
-    objects.add(Rc::new(Box::new(
-        Vect3::new(130.0, 0.0, 65.0),
-        Vect3::new(295.0, 165.0, 230.0),
-        white.clone(),
-    )));
-    objects.add(Rc::new(Box::new(
-        Vect3::new(265.0, 0.0, 295.0),
-        Vect3::new(430.0, 330.0, 460.0),
-        white.clone(),
-    )));
+    // objects.add(Rc::new(Box::new(
+    //     Vect3::new(130.0, 0.0, 65.0),
+    //     Vect3::new(295.0, 165.0, 230.0),
+    //     white.clone(),
+    // )));
+    // objects.add(Rc::new(Box::new(
+    //     Vect3::new(265.0, 0.0, 295.0),
+    //     Vect3::new(430.0, 330.0, 460.0),
+    //     white.clone(),
+    // )));
     let mut box1: Rc<dyn Hittable> = Rc::new(Box::new(
         Vect3::new(0.0, 0.0, 0.0),
         Vect3::new(165.0, 330.0, 165.0),
@@ -245,7 +314,7 @@ fn cornell_box() -> HitableList {
     ));
     box1 = Rc::new(RotateY::new(box1, 15.0));
     box1 = Rc::new(Translate::new(box1, Vect3::new(265.0, 0.0, 295.0)));
-    objects.add(box1);
+    objects.add(box1.clone());
 
     let mut box2: Rc<dyn Hittable> = Rc::new(Box::new(
         Vect3::new(0.0, 0.0, 0.0),
@@ -254,7 +323,18 @@ fn cornell_box() -> HitableList {
     ));
     box2 = Rc::new(RotateY::new(box2, -18.0));
     box2 = Rc::new(Translate::new(box2, Vect3::new(130.0, 0.0, 65.0)));
-    objects.add(box2);
+    objects.add(box2.clone());
+
+    objects.add(Rc::new(ConstantMedium::new2(
+        box1,
+        0.01,
+        Vect3::new(0.0, 0.0, 0.0),
+    )));
+    objects.add(Rc::new(ConstantMedium::new2(
+        box2,
+        0.01,
+        Vect3::new(1.0, 1.0, 1.0),
+    )));
 
     objects
 }
@@ -277,7 +357,7 @@ fn ray_color(r: &Ray, background: Vect3, world: &dyn Hittable, depth: i64) -> Ve
     }
 }
 fn main() {
-    let path = "output/book2/image20.jpg";
+    let path = "output/book2/image21.jpg";
 
     let aspect_ratio = 1.0;
     let width = 600;
@@ -304,7 +384,7 @@ fn main() {
     let _lower_left_corner =
         origin - horizontal / 2.0 - vertical / 2.0 - Vect3::new(0.0, 0.0, focal_length);
 
-    let world = cornell_box();
+    let world = cornell_smoke();
     let lookfrom = Vect3::new(278.0, 278.0, -800.0);
     let lookat = Vect3::new(278.0, 278.0, 0.0);
     let vfov = 40.0;
