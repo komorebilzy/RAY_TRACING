@@ -134,21 +134,29 @@ use std::{fs::File, process::exit};
 //     objects
 // }
 
-fn two_perlin_spheres() -> HitableList {
-    let mut objects = HitableList::new();
-    let pertext = Rc::new(NoiseTexture::new2(4.0));
+// fn two_perlin_spheres() -> HitableList {
+//     let mut objects = HitableList::new();
+//     let pertext = Rc::new(NoiseTexture::new2(4.0));
 
-    objects.add(Rc::new(Sphere::new(
-        Vect3::new(0.0, -1000.0, 0.0),
-        1000.0,
-        Rc::new(Lambertian::new2(pertext.clone())),
-    )));
-    objects.add(Rc::new(Sphere::new(
-        Vect3::new(0.0, 2.0, 0.0),
-        2.0,
-        Rc::new(Lambertian::new2(pertext)),
-    )));
-    objects
+//     objects.add(Rc::new(Sphere::new(
+//         Vect3::new(0.0, -1000.0, 0.0),
+//         1000.0,
+//         Rc::new(Lambertian::new2(pertext.clone())),
+//     )));
+//     objects.add(Rc::new(Sphere::new(
+//         Vect3::new(0.0, 2.0, 0.0),
+//         2.0,
+//         Rc::new(Lambertian::new2(pertext)),
+//     )));
+//     objects
+// }
+fn earth() -> HitableList {
+    let earth_texture = Rc::new(ImageTexture::new("input/earthmap.jpg"));
+    let earth_surface = Rc::new(Lambertian::new2(earth_texture));
+    let globe = Rc::new(Sphere::new(Vect3::new(0.0, 0.0, 0.0), 2.0, earth_surface));
+    let mut ans = HitableList::new();
+    ans.add(globe);
+    ans
 }
 
 fn ray_color(r: &Ray, world: &dyn Hittable, depth: i64) -> Vect3 {
@@ -170,7 +178,7 @@ fn ray_color(r: &Ray, world: &dyn Hittable, depth: i64) -> Vect3 {
     }
 }
 fn main() {
-    let path = "output/book2/image13.jpg";
+    let path = "output/book2/image15.jpg";
 
     let aspect_ratio = 16.0 / 9.0;
     let width = 400;
@@ -197,7 +205,7 @@ fn main() {
     let _lower_left_corner =
         origin - horizontal / 2.0 - vertical / 2.0 - Vect3::new(0.0, 0.0, focal_length);
 
-    let world = two_perlin_spheres();
+    let world = earth();
     let lookfrom = Vect3::new(13.0, 2.0, 3.0);
     let lookat = Vect3::new(0.0, 0.0, 0.0);
     let vfov = 20.0;
