@@ -236,8 +236,26 @@ fn cornell_box() -> HitableList {
     objects.add(Rc::new(Box::new(
         Vect3::new(265.0, 0.0, 295.0),
         Vect3::new(430.0, 330.0, 460.0),
-        white,
+        white.clone(),
     )));
+    let mut box1: Rc<dyn Hittable> = Rc::new(Box::new(
+        Vect3::new(0.0, 0.0, 0.0),
+        Vect3::new(165.0, 330.0, 165.0),
+        white.clone(),
+    ));
+    box1 = Rc::new(RotateY::new(box1, 15.0));
+    box1 = Rc::new(Translate::new(box1, Vect3::new(265.0, 0.0, 295.0)));
+    objects.add(box1);
+
+    let mut box2: Rc<dyn Hittable> = Rc::new(Box::new(
+        Vect3::new(0.0, 0.0, 0.0),
+        Vect3::new(165.0, 165.0, 165.0),
+        white,
+    ));
+    box2 = Rc::new(RotateY::new(box2, -18.0));
+    box2 = Rc::new(Translate::new(box2, Vect3::new(130.0, 0.0, 65.0)));
+    objects.add(box2);
+
     objects
 }
 
@@ -259,7 +277,7 @@ fn ray_color(r: &Ray, background: Vect3, world: &dyn Hittable, depth: i64) -> Ve
     }
 }
 fn main() {
-    let path = "output/book2/image18.jpg";
+    let path = "output/book2/image20.jpg";
 
     let aspect_ratio = 1.0;
     let width = 600;
