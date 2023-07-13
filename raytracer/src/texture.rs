@@ -1,4 +1,4 @@
-// use image::GenericImageView;
+use image::GenericImageView;
 
 use crate::*;
 pub trait Texture {
@@ -67,12 +67,12 @@ impl NoiseTexture {
     //         scale: 0.0,
     //     }
     // }
-    // pub fn new2(sc: f64) -> Self {
-    //     Self {
-    //         noise: (Perlin::new()),
-    //         scale: (sc),
-    //     }
-    // }
+    pub fn new2(sc: f64) -> Self {
+        Self {
+            noise: (Perlin::new()),
+            scale: (sc),
+        }
+    }
 }
 impl Texture for NoiseTexture {
     fn value(&self, _u: f64, _v: f64, p: Vect3) -> Vect3 {
@@ -90,40 +90,40 @@ pub struct ImageTexture {
 }
 const COMPONENTS_PER_PIXEL: u32 = 3;
 impl ImageTexture {
-    // pub fn default() -> Self {
-    //     Self {
-    //         data: (Vec::new()),
-    //         width: (0),
-    //         height: (0),
-    //         bytes_per_scanline: (0),
-    //     }
-    // }
-    // pub fn new(filename: &str) -> Self {
-    //     let mut ans = ImageTexture::default();
-    //     let image_result = image::open(filename);
+    pub fn default() -> Self {
+        Self {
+            data: (Vec::new()),
+            width: (0),
+            height: (0),
+            bytes_per_scanline: (0),
+        }
+    }
+    pub fn new(filename: &str) -> Self {
+        let mut ans = ImageTexture::default();
+        let image_result = image::open(filename);
 
-    //     // let image_result: Result<DynamicImage, _> = open(filename);
-    //     match image_result {
-    //         Ok(image) => {
-    //             // let dimensions = image.dimensions();
-    //             // ans.width = dimensions.0;
-    //             // ans.height = dimensions.1;
-    //             ans.width = image.width();
-    //             ans.height = image.height();
-    //             ans.bytes_per_scanline = COMPONENTS_PER_PIXEL * ans.width;
-    //             for y in 0..ans.height {
-    //                 for x in 0..ans.width {
-    //                     let pixel = image.get_pixel(x, y);
-    //                     ans.data.push(pixel[0]);
-    //                     ans.data.push(pixel[1]);
-    //                     ans.data.push(pixel[2]);
-    //                 }
-    //             }
-    //         }
-    //         Err(_err) => {}
-    //     }
-    //     ans
-    // }
+        // let image_result: Result<DynamicImage, _> = open(filename);
+        match image_result {
+            Ok(image) => {
+                // let dimensions = image.dimensions();
+                // ans.width = dimensions.0;
+                // ans.height = dimensions.1;
+                ans.width = image.width();
+                ans.height = image.height();
+                ans.bytes_per_scanline = COMPONENTS_PER_PIXEL * ans.width;
+                for y in 0..ans.height {
+                    for x in 0..ans.width {
+                        let pixel = image.get_pixel(x, y);
+                        ans.data.push(pixel[0]);
+                        ans.data.push(pixel[1]);
+                        ans.data.push(pixel[2]);
+                    }
+                }
+            }
+            Err(_err) => {}
+        }
+        ans
+    }
 }
 
 impl Texture for ImageTexture {
