@@ -170,12 +170,24 @@ fn simple_light() -> HitableList {
         Rc::new(Lambertian::new2(pertext.clone())),
     )));
     objects.add(Rc::new(Sphere::new(
-        Vect3::new(0.0, 2.0, 0.0),
+        Vect3::new(0.0, 7.0, 0.0),
         2.0,
         Rc::new(Lambertian::new2(pertext)),
     )));
     let diffliight = Rc::new(DiffuseLight::new2(Vect3::new(4.0, 4.0, 4.0)));
-    objects.add(Rc::new(XyRec::new(3.0, 5.0, 1.0, 3.0, -2.0, diffliight)));
+    objects.add(Rc::new(XyRec::new(
+        3.0,
+        5.0,
+        1.0,
+        3.0,
+        -2.0,
+        diffliight.clone(),
+    )));
+    objects.add(Rc::new(Sphere::new(
+        Vect3::new(0.0, 2.0, 0.0),
+        2.0,
+        diffliight,
+    )));
     objects
 }
 
@@ -197,7 +209,7 @@ fn ray_color(r: &Ray, background: Vect3, world: &dyn Hittable, depth: i64) -> Ve
     }
 }
 fn main() {
-    let path = "output/book2/image16.jpg";
+    let path = "output/book2/image17.jpg";
 
     let aspect_ratio = 16.0 / 9.0;
     let width = 400;
