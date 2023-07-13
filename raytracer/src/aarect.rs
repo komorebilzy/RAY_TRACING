@@ -33,7 +33,7 @@ impl Hittable for XyRec {
             return None;
         }
         let x = _r.origin().x() + t * _r.direction().x();
-        let y = _r.direction().y() + t * _r.direction().y();
+        let y = _r.origin().y() + t * _r.direction().y();
         if x < self.x0 || x > self.x1 || y < self.y0 || y > self.y1 {
             return None;
         }
