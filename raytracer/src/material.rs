@@ -2,6 +2,9 @@ use crate::*;
 use std::option::Option;
 pub trait Material {
     fn scatter(&self, r_in: Ray, rec: HitRecord) -> Option<Pair<Vect3, Ray>>;
+    fn emitted(&self, _u: f64, _v: f64, _p: Vect3) -> Vect3 {
+        Vect3::new(0.0, 0.0, 0.0)
+    }
 }
 
 pub struct Lambertian {
@@ -108,5 +111,28 @@ impl Material for Dielectric {
         let scattered = Ray::new(rec.p, direction, r_in.time());
         let ans = Pair::new(attenuation, scattered);
         Some(ans)
+    }
+}
+
+pub struct DiffuseLight {
+    pub emit: Rc<dyn Texture>,
+}
+
+impl DiffuseLight {
+    // pub fn new1(a: Rc<Texture>) -> Self {
+    //     Self { emit: (a) }
+    // }
+    pub fn new2(c: Vect3) -> Self {
+        Self {
+            emit: (Rc::new(SolidColor::new1(c))),
+        }
+    }
+}
+impl Material for DiffuseLight {
+    fn scatter(&self, _r_in: Ray, _rec: HitRecord) -> Option<Pair<Vect3, Ray>> {
+        None
+    }
+    fn emitted(&self, _u: f64, _v: f64, _p: Vect3) -> Vect3 {
+        self.emit.value(_u, _v, _p)
     }
 }

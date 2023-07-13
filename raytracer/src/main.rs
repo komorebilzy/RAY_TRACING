@@ -40,6 +40,9 @@ use texture::*;
 mod perlin;
 use perlin::*;
 
+mod aarect;
+use aarect::*;
+
 use console::style;
 use image::{ImageBuffer, RgbImage};
 use indicatif::ProgressBar;
@@ -138,28 +141,45 @@ use std::{fs::File, process::exit};
 //     let mut objects = HitableList::new();
 //     let pertext = Rc::new(NoiseTexture::new2(4.0));
 
-//     objects.add(Rc::new(Sphere::new(
-//         Vect3::new(0.0, -1000.0, 0.0),
-//         1000.0,
-//         Rc::new(Lambertian::new2(pertext.clone())),
-//     )));
-//     objects.add(Rc::new(Sphere::new(
-//         Vect3::new(0.0, 2.0, 0.0),
-//         2.0,
-//         Rc::new(Lambertian::new2(pertext)),
-//     )));
+// objects.add(Rc::new(Sphere::new(
+//     Vect3::new(0.0, -1000.0, 0.0),
+//     1000.0,
+//     Rc::new(Lambertian::new2(pertext.clone())),
+// )));
+// objects.add(Rc::new(Sphere::new(
+//     Vect3::new(0.0, 2.0, 0.0),
+//     2.0,
+//     Rc::new(Lambertian::new2(pertext)),
+// )));
 //     objects
 // }
-fn earth() -> HitableList {
-    let earth_texture = Rc::new(ImageTexture::new("input/earthmap.jpg"));
-    let earth_surface = Rc::new(Lambertian::new2(earth_texture));
-    let globe = Rc::new(Sphere::new(Vect3::new(0.0, 0.0, 0.0), 2.0, earth_surface));
-    let mut ans = HitableList::new();
-    ans.add(globe);
-    ans
+// fn earth() -> HitableList {
+//     let earth_texture = Rc::new(ImageTexture::new("input/earthmap.jpg"));
+//     let earth_surface = Rc::new(Lambertian::new2(earth_texture));
+//     let globe = Rc::new(Sphere::new(Vect3::new(0.0, 0.0, 0.0), 2.0, earth_surface));
+//     let mut ans = HitableList::new();
+//     ans.add(globe);
+//     ans
+// }
+fn simple_light() -> HitableList {
+    let mut objects = HitableList::new();
+    let pertext = Rc::new(NoiseTexture::new2(4.0));
+    objects.add(Rc::new(Sphere::new(
+        Vect3::new(0.0, -1000.0, 0.0),
+        1000.0,
+        Rc::new(Lambertian::new2(pertext.clone())),
+    )));
+    objects.add(Rc::new(Sphere::new(
+        Vect3::new(0.0, 2.0, 0.0),
+        2.0,
+        Rc::new(Lambertian::new2(pertext)),
+    )));
+    let diffliight = Rc::new(DiffuseLight::new2(Vect3::new(4.0, 4.0, 4.0)));
+    objects.add(Rc::new(XyRec::new(3.0, 5.0, 1.0, 3.0, -2.0, diffliight)));
+    objects
 }
 
-fn ray_color(r: &Ray, world: &dyn Hittable, depth: i64) -> Vect3 {
+fn ray_color(r: &Ray, background: Vect3, world: &dyn Hittable, depth: i64) -> Vect3 {
     if depth <= 0 {
         return Vect3::new(0.0, 0.0, 0.0);
     }
@@ -167,24 +187,23 @@ fn ray_color(r: &Ray, world: &dyn Hittable, depth: i64) -> Vect3 {
     let rec = world.hit(r, 0.001, infinity);
     match rec {
         Some(x) => match x.mat_ptr.scatter(*r, x.clone()) {
-            Some(x) => x.first * ray_color(&x.second, world, depth - 1),
-            None => Vect3::new(0.0, 0.0, 0.0),
+            Some(y) => {
+                x.mat_ptr.emitted(x.u, x.v, x.p)
+                    + y.first * ray_color(&y.second, background, world, depth - 1)
+            }
+            None => x.mat_ptr.emitted(x.u, x.v, x.p),
         },
-        None => {
-            let unit_direction: Vect3 = unit_vector(r.direction());
-            let t: f64 = (unit_direction.y() + 1.0) * 0.5;
-            Vect3::new(1.0, 1.0, 1.0) * (1.0 - t) + Vect3::new(0.5, 0.7, 1.0) * t
-        }
+        None => background,
     }
 }
 fn main() {
-    let path = "output/book2/image15.jpg";
+    let path = "output/book2/image16.jpg";
 
     let aspect_ratio = 16.0 / 9.0;
     let width = 400;
     let height = ((width as f64) / aspect_ratio) as u32;
     let quality = 100;
-    let samples_per_pixel = 100;
+    let samples_per_pixel = 400;
     let max_depth = 50;
     let mut img: RgbImage = ImageBuffer::new(width, height);
 
@@ -205,11 +224,12 @@ fn main() {
     let _lower_left_corner =
         origin - horizontal / 2.0 - vertical / 2.0 - Vect3::new(0.0, 0.0, focal_length);
 
-    let world = earth();
-    let lookfrom = Vect3::new(13.0, 2.0, 3.0);
-    let lookat = Vect3::new(0.0, 0.0, 0.0);
+    let world = simple_light();
+    let lookfrom = Vect3::new(26.0, 3.0, 6.0);
+    let lookat = Vect3::new(0.0, 2.0, 0.0);
     let vfov = 20.0;
     let aperture = 0.0;
+    let background = Vect3::new(0.0, 0.0, 0.0);
     let vup = Vect3::new(0.0, 1.0, 0.0);
     let dis_to_focus = 10.0;
 
@@ -241,7 +261,7 @@ fn main() {
                 let u: f64 = ((i as f64) + random_double()) / (width as f64);
                 let v: f64 = ((j as f64) + random_double()) / (height as f64);
                 let r: Ray = cam.get_ray(u, v);
-                pixel_color += ray_color(&r, &world, max_depth);
+                pixel_color += ray_color(&r, background, &world, max_depth);
             }
             let scale: f64 = 1.0 / (samples_per_pixel as f64);
             let r: f64 = (scale * pixel_color[0]).sqrt();
