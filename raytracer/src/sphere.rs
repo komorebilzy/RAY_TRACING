@@ -6,13 +6,13 @@ pub struct Sphere {
     pub mat_ptr: Rc<dyn Material>,
 }
 impl Sphere {
-    pub fn new(cen: Vect3, r: f64, m: Rc<dyn Material>) -> Self {
-        Self {
-            center: (cen),
-            radius: (r),
-            mat_ptr: (m),
-        }
-    }
+    // pub fn new(cen: Vect3, r: f64, m: Rc<dyn Material>) -> Self {
+    //     Self {
+    //         center: (cen),
+    //         radius: (r),
+    //         mat_ptr: (m),
+    //     }
+    // }
     pub fn get_sphere_uv(p: Vect3) -> (f64, f64) {
         let theta = (-p.y()).acos();
         let phi = (-p.z()).atan2(p.x()) + std::f64::consts::PI;
