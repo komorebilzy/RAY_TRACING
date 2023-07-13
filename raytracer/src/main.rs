@@ -43,8 +43,8 @@ use perlin::*;
 mod aarect;
 use aarect::*;
 
-// mod r#box;
-// use r#box::*;
+mod bbox;
+use bbox::*;
 
 use console::style;
 use image::{ImageBuffer, RgbImage};
@@ -220,17 +220,24 @@ fn cornell_box() -> HitableList {
         555.0,
         white.clone(),
     )));
-    objects.add(Rc::new(XyRect::new(0.0, 555.0, 0.0, 555.0, 555.0, white)));
-    // objects.add(Rc::new(Box::new(
-    //     Vect3::new(130.0, 0.0, 65.0),
-    //     Vect3::new(295.0, 165.0, 230.0),
-    //     white.clone(),
-    // )));
-    // objects.add(Rc::new(Box::new(
-    //     Vect3::new(265.0, 0.0, 295.0),
-    //     Vect3::new(430.0, 330.0, 460.0),
-    //     white.clone(),
-    // )));
+    objects.add(Rc::new(XyRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        555.0,
+        white.clone(),
+    )));
+    objects.add(Rc::new(Box::new(
+        Vect3::new(130.0, 0.0, 65.0),
+        Vect3::new(295.0, 165.0, 230.0),
+        white.clone(),
+    )));
+    objects.add(Rc::new(Box::new(
+        Vect3::new(265.0, 0.0, 295.0),
+        Vect3::new(430.0, 330.0, 460.0),
+        white,
+    )));
     objects
 }
 
@@ -252,7 +259,7 @@ fn ray_color(r: &Ray, background: Vect3, world: &dyn Hittable, depth: i64) -> Ve
     }
 }
 fn main() {
-    let path = "output/book2/image18jpg";
+    let path = "output/book2/image19jpg";
 
     let aspect_ratio = 1.0;
     let width = 600;
