@@ -43,8 +43,8 @@
 // mod aarect;
 // use aarect::*;
 
-// // mod r#box;
-// // use r#box::*;
+// mod r#box;
+// use r#box::*;
 
 // use console::style;
 // use image::{ImageBuffer, RgbImage};
@@ -520,7 +520,7 @@ fn simple_light() -> HitableList {
         Rc::new(Lambertian::new2(pertext.clone())),
     )));
     objects.add(Rc::new(Sphere::new(
-        Vect3::new(0.0, 7.0, 0.0),
+        Vect3::new(0.0, 2.0, 0.0),
         2.0,
         Rc::new(Lambertian::new2(pertext)),
     )));
@@ -534,7 +534,7 @@ fn simple_light() -> HitableList {
         diffliight.clone(),
     )));
     objects.add(Rc::new(Sphere::new(
-        Vect3::new(0.0, 2.0, 0.0),
+        Vect3::new(0.0, 7.0, 0.0),
         2.0,
         diffliight,
     )));
