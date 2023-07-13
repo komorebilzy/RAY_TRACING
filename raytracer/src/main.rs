@@ -11,7 +11,7 @@ mod ray;
 use ray::*;
 
 mod sphere;
-use sphere::*;
+// use sphere::*;
 
 mod rtweekend;
 use rtweekend::*;
@@ -161,33 +161,63 @@ use std::{fs::File, process::exit};
 //     ans.add(globe);
 //     ans
 // }
-fn simple_light() -> HitableList {
+// fn simple_light() -> HitableList {
+//     let mut objects = HitableList::new();
+//     let pertext = Rc::new(NoiseTexture::new2(4.0));
+//     objects.add(Rc::new(Sphere::new(
+//         Vect3::new(0.0, -1000.0, 0.0),
+//         1000.0,
+//         Rc::new(Lambertian::new2(pertext.clone())),
+//     )));
+//     objects.add(Rc::new(Sphere::new(
+//         Vect3::new(0.0, 7.0, 0.0),
+//         2.0,
+//         Rc::new(Lambertian::new2(pertext)),
+//     )));
+//     let diffliight = Rc::new(DiffuseLight::new2(Vect3::new(4.0, 4.0, 4.0)));
+// objects.add(Rc::new(XyRec::new(
+//     3.0,
+//     5.0,
+//     1.0,
+//     3.0,
+//     -2.0,
+//     diffliight.clone(),
+// )));
+//     objects.add(Rc::new(Sphere::new(
+//         Vect3::new(0.0, 2.0, 0.0),
+//         2.0,
+//         diffliight,
+//     )));
+//     objects
+// }
+fn cornell_box() -> HitableList {
     let mut objects = HitableList::new();
-    let pertext = Rc::new(NoiseTexture::new2(4.0));
-    objects.add(Rc::new(Sphere::new(
-        Vect3::new(0.0, -1000.0, 0.0),
-        1000.0,
-        Rc::new(Lambertian::new2(pertext.clone())),
+    let red = Rc::new(Lambertian::new1(Vect3::new(0.65, 0.05, 0.05)));
+    let white = Rc::new(Lambertian::new1(Vect3::new(0.73, 0.73, 0.73)));
+    let green = Rc::new(Lambertian::new1(Vect3::new(0.12, 0.45, 0.15)));
+    let light = Rc::new(DiffuseLight::new2(Vect3::new(15.0, 15.0, 15.0)));
+    objects.add(Rc::new(YzRect::new(0.0, 555.0, 0.0, 555.0, 555.0, green)));
+    objects.add(Rc::new(YzRect::new(0.0, 555.0, 0.0, 555.0, 0.0, red)));
+    objects.add(Rc::new(XzRect::new(
+        213.0, 343.0, 227.0, 332.0, 554.0, light,
     )));
-    objects.add(Rc::new(Sphere::new(
-        Vect3::new(0.0, 7.0, 0.0),
-        2.0,
-        Rc::new(Lambertian::new2(pertext)),
+    objects.add(Rc::new(XzRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        0.0,
+        white.clone(),
     )));
-    let diffliight = Rc::new(DiffuseLight::new2(Vect3::new(4.0, 4.0, 4.0)));
-    objects.add(Rc::new(XyRec::new(
-        3.0,
-        5.0,
-        1.0,
-        3.0,
-        -2.0,
-        diffliight.clone(),
+    objects.add(Rc::new(XzRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        555.0,
+        white.clone(),
     )));
-    objects.add(Rc::new(Sphere::new(
-        Vect3::new(0.0, 2.0, 0.0),
-        2.0,
-        diffliight,
-    )));
+    objects.add(Rc::new(XyRect::new(0.0, 555.0, 0.0, 555.0, 555.0, white)));
     objects
 }
 
@@ -209,13 +239,13 @@ fn ray_color(r: &Ray, background: Vect3, world: &dyn Hittable, depth: i64) -> Ve
     }
 }
 fn main() {
-    let path = "output/book2/image17.jpg";
+    let path = "output/book2/image18.jpg";
 
-    let aspect_ratio = 16.0 / 9.0;
-    let width = 400;
+    let aspect_ratio = 1.0;
+    let width = 600;
     let height = ((width as f64) / aspect_ratio) as u32;
     let quality = 100;
-    let samples_per_pixel = 400;
+    let samples_per_pixel = 200;
     let max_depth = 50;
     let mut img: RgbImage = ImageBuffer::new(width, height);
 
@@ -236,10 +266,10 @@ fn main() {
     let _lower_left_corner =
         origin - horizontal / 2.0 - vertical / 2.0 - Vect3::new(0.0, 0.0, focal_length);
 
-    let world = simple_light();
-    let lookfrom = Vect3::new(26.0, 3.0, 6.0);
-    let lookat = Vect3::new(0.0, 2.0, 0.0);
-    let vfov = 20.0;
+    let world = cornell_box();
+    let lookfrom = Vect3::new(278.0, 278.0, -800.0);
+    let lookat = Vect3::new(278.0, 278.0, 0.0);
+    let vfov = 40.0;
     let aperture = 0.0;
     let background = Vect3::new(0.0, 0.0, 0.0);
     let vup = Vect3::new(0.0, 1.0, 0.0);
