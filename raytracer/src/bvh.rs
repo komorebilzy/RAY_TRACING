@@ -9,18 +9,16 @@ pub struct BvhNode {
 
 pub fn box_compare(a: &Rc<dyn Hittable>, b: &Rc<dyn Hittable>, axis: i64) -> std::cmp::Ordering {
     match a.bounding_box(0.0, 0.0) {
-        None => {
-            eprintln!("No bounding box in bvh_node constructor");
-            std::cmp::Ordering::Equal
-        }
+        None => std::cmp::Ordering::Less,
         Some(x) => match b.bounding_box(0.0, 0.0) {
             None => {
                 eprintln!("No bounding box in bvh_node constructor");
-                std::cmp::Ordering::Equal
+                std::cmp::Ordering::Less
             }
             Some(y) =>{
                 if  x.min().e[axis as usize]<y.min().e[axis as usize] {std::cmp::Ordering::Less}
-                else {std::cmp::Ordering::Greater}
+                else if x.min().e[axis as usize]>y.min().e[axis as usize]{std::cmp::Ordering::Greater}
+                else {std::cmp::Ordering::Equal}
             }
                 // x.min().e[axis as usize]
                 // .partial_cmp(&y.min().e[axis as usize])
@@ -83,9 +81,21 @@ impl BvhNode {
             ans.left = Rc::new(BvhNode::prinew(objects.clone(), start, mid, time0, time1));
             ans.left = Rc::new(BvhNode::prinew(objects, mid, end, time0, time1));
         }
-        let x = ans.left.bounding_box(time0, time1).unwrap();
-        let y = ans.right.bounding_box(time0, time1).unwrap();
-        ans.boxx = surrounding_box(x, y);
+        let left = ans.left.bounding_box(time0, time1);
+        let right = ans.right.bounding_box(time0, time1);
+        match left {
+            Some(x) => match right {
+                Some(y) => {
+                    ans.boxx = surrounding_box(x, y);
+                }
+                None => {
+                    ans.boxx = Aabb::new(Vect3::new(0.0, 0.0, 0.0), Vect3::new(0.0, 0.0, 0.0));
+                }
+            },
+            None => {
+                ans.boxx = Aabb::new(Vect3::new(0.0, 0.0, 0.0), Vect3::new(0.0, 0.0, 0.0));
+            }
+        }
         ans
     }
 
