@@ -79,7 +79,7 @@ impl BvhNode {
             objects[start..end].sort_by(comparator);
             let mid = start + object_span / 2;
             ans.left = Rc::new(BvhNode::prinew(objects.clone(), start, mid, time0, time1));
-            ans.left = Rc::new(BvhNode::prinew(objects, mid, end, time0, time1));
+            ans.right = Rc::new(BvhNode::prinew(objects, mid, end, time0, time1));
         }
         let left = ans.left.bounding_box(time0, time1);
         let right = ans.right.bounding_box(time0, time1);
