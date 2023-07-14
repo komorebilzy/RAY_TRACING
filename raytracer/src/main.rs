@@ -357,7 +357,15 @@ fn final_scene() -> HitableList {
         }
     }
     let mut objects = HitableList::new();
-    objects.add(Rc::new(BvhNode::new(boxes1, 0.0, 1.0)));
+    objects.add(Rc::new(BvhNode::prinew(
+        &boxes1.objects,
+        0,
+        boxes1.objects.len(),
+        0.0,
+        1.0,
+    )));
+
+    // objects.add(Rc::new(BvhNode::new(boxes1, 0.0, 1.0)));
     let light = Rc::new(DiffuseLight::new2(Vect3::new(7.0, 7.0, 7.0)));
     objects.add(Rc::new(XzRect::new(
         123.0, 423.0, 147.0, 412.0, 554.0, light,
@@ -429,7 +437,16 @@ fn final_scene() -> HitableList {
         )));
     }
     objects.add(Rc::new(Translate::new(
-        Rc::new(RotateY::new(Rc::new(BvhNode::new(boxes2, 0.0, 1.0)), 15.0)),
+        Rc::new(RotateY::new(
+            Rc::new(BvhNode::prinew(
+                &boxes2.objects,
+                0,
+                boxes2.objects.len(),
+                0.0,
+                1.0,
+            )),
+            15.0,
+        )),
         Vect3::new(-100.0, 270.0, 395.0),
     )));
     objects
@@ -442,7 +459,7 @@ fn ray_color(r: &Ray, background: Vect3, world: &dyn Hittable, depth: i64) -> Ve
     let infinity = f64::INFINITY;
     let rec = world.hit(r, 0.001, infinity);
     match rec {
-        Some(x) => match x.mat_ptr.scatter(*r, x.clone()) {
+        Some(x) => match x.mat_ptr.scatter(r, x.clone()) {
             Some(y) => {
                 x.mat_ptr.emitted(x.u, x.v, x.p)
                     + y.first * ray_color(&y.second, background, world, depth - 1)
@@ -453,7 +470,7 @@ fn ray_color(r: &Ray, background: Vect3, world: &dyn Hittable, depth: i64) -> Ve
     }
 }
 fn main() {
-    let path = "output/book2/image22.jpg";
+    let path = "output/book2/image23.jpg";
 
     let aspect_ratio = 1.0;
     let width = 800;

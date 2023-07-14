@@ -1,7 +1,7 @@
 use crate::*;
 use std::option::Option;
 pub trait Material {
-    fn scatter(&self, r_in: Ray, rec: HitRecord) -> Option<Pair<Vect3, Ray>>;
+    fn scatter(&self, r_in: &Ray, rec: HitRecord) -> Option<Pair<Vect3, Ray>>;
     fn emitted(&self, _u: f64, _v: f64, _p: Vect3) -> Vect3 {
         Vect3::new(0.0, 0.0, 0.0)
     }
@@ -21,7 +21,7 @@ impl Lambertian {
     }
 }
 impl Material for Lambertian {
-    fn scatter(&self, _r_in: Ray, rec: HitRecord) -> Option<Pair<Vect3, Ray>> {
+    fn scatter(&self, _r_in: &Ray, rec: HitRecord) -> Option<Pair<Vect3, Ray>> {
         let mut scatter_direction = rec.normal + random_unit_vector();
         if scatter_direction.near_zero() {
             scatter_direction = rec.normal;
@@ -48,7 +48,7 @@ impl Metal {
 }
 
 impl Material for Metal {
-    fn scatter(&self, r_in: Ray, rec: HitRecord) -> Option<Pair<Vect3, Ray>> {
+    fn scatter(&self, r_in: &Ray, rec: HitRecord) -> Option<Pair<Vect3, Ray>> {
         let reflected = reflect(unit_vector(r_in.direction()), rec.normal);
         let scattered = Ray::new(
             rec.p,
@@ -90,7 +90,7 @@ impl Dielectric {
     }
 }
 impl Material for Dielectric {
-    fn scatter(&self, r_in: Ray, rec: HitRecord) -> Option<Pair<Vect3, Ray>> {
+    fn scatter(&self, r_in: &Ray, rec: HitRecord) -> Option<Pair<Vect3, Ray>> {
         let attenuation = Vect3::new(1.0, 1.0, 1.0);
         let refraction_ratio = if rec.front_face {
             1.0 / self.ir
@@ -129,7 +129,7 @@ impl DiffuseLight {
     }
 }
 impl Material for DiffuseLight {
-    fn scatter(&self, _r_in: Ray, _rec: HitRecord) -> Option<Pair<Vect3, Ray>> {
+    fn scatter(&self, _r_in: &Ray, _rec: HitRecord) -> Option<Pair<Vect3, Ray>> {
         None
     }
     fn emitted(&self, _u: f64, _v: f64, _p: Vect3) -> Vect3 {
@@ -151,7 +151,7 @@ impl Isotropic {
     // }
 }
 impl Material for Isotropic {
-    fn scatter(&self, r_in: Ray, rec: HitRecord) -> Option<Pair<Vect3, Ray>> {
+    fn scatter(&self, r_in: &Ray, rec: HitRecord) -> Option<Pair<Vect3, Ray>> {
         Some(Pair {
             first: (self.albedo.value(rec.u, rec.v, rec.p)),
             second: (Ray::new(rec.p, random_in_unit_sphere(), r_in.time())),
