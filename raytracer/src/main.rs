@@ -473,7 +473,7 @@ fn main() {
     let path = "output/book2/image23.jpg";
 
     let aspect_ratio = 1.0;
-    let width = 800;
+    let width = 100;
     let height = ((width as f64) / aspect_ratio) as u32;
     let quality = 100;
     let samples_per_pixel = 1000;
