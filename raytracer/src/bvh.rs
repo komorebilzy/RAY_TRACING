@@ -42,24 +42,15 @@ pub fn box_z_compare(a: &Rc<dyn Hittable>, b: &Rc<dyn Hittable>) -> std::cmp::Or
 
 impl BvhNode {
     pub fn prinew(
-        src_objects: &[Rc<dyn Hittable>],
+        src_objects: &mut [Rc<dyn Hittable>],
         start: usize,
         end: usize,
         time0: f64,
         time1: f64,
     ) -> Self {
-        let mut objects: Vec<Rc<dyn Hittable>> = Vec::new();
-        let mut i = start;
-        loop {
-            objects.push(src_objects[i].clone());
-            i += 1;
-            if i == end {
-                break;
-            }
-        }
         let mut ans = BvhNode {
-            left: (objects[0].clone()),
-            right: (objects[0].clone()),
+            left: (src_objects[start].clone()),
+            right: (src_objects[start].clone()),
             boxx: (Aabb::default()),
         };
 
@@ -73,18 +64,20 @@ impl BvhNode {
         };
         let object_span = end - start;
         if object_span == 2 {
-            if comparator(&objects[0].clone(), &objects[1].clone()) == std::cmp::Ordering::Less {
-                ans.left = objects[0].clone();
-                ans.right = objects[1].clone();
+            if comparator(&src_objects[start].clone(), &src_objects[start + 1].clone())
+                == std::cmp::Ordering::Less
+            {
+                ans.left = src_objects[start].clone();
+                ans.right = src_objects[start + 1].clone();
             } else {
-                ans.left = objects[1].clone();
-                ans.right = objects[0].clone();
+                ans.left = src_objects[start + 1].clone();
+                ans.right = src_objects[start].clone();
             }
         } else if object_span != 1 {
-            objects[0..object_span].sort_by(comparator);
-            let mid = object_span / 2;
-            ans.left = Rc::new(BvhNode::prinew(&objects, 0, mid, time0, time1));
-            ans.right = Rc::new(BvhNode::prinew(&objects, mid, object_span, time0, time1));
+            src_objects[start..end].sort_by(comparator);
+            let mid = start + object_span / 2;
+            ans.left = Rc::new(BvhNode::prinew(src_objects, start, mid, time0, time1));
+            ans.right = Rc::new(BvhNode::prinew(src_objects, mid, end, time0, time1));
         }
         let left = ans.left.bounding_box(time0, time1);
         let right = ans.right.bounding_box(time0, time1);
@@ -104,9 +97,15 @@ impl BvhNode {
         ans
     }
 
-    // pub fn new(list: HitableList, time0: f64, time1: f64) -> Self {
-    //     BvhNode::prinew(&list.objects, 0_usize, list.objects.len(), time0, time1)
-    // }
+    pub fn new(list: HitableList, time0: f64, time1: f64) -> Self {
+        BvhNode::prinew(
+            &mut list.objects.clone(),
+            0_usize,
+            list.objects.len(),
+            time0,
+            time1,
+        )
+    }
 }
 
 impl Hittable for BvhNode {

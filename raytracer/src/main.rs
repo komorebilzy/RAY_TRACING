@@ -357,13 +357,7 @@ fn final_scene() -> HitableList {
         }
     }
     let mut objects = HitableList::new();
-    objects.add(Rc::new(BvhNode::prinew(
-        &boxes1.objects,
-        0,
-        boxes1.objects.len(),
-        0.0,
-        1.0,
-    )));
+    objects.add(Rc::new(BvhNode::new(boxes1, 0.0, 1.0)));
 
     // objects.add(Rc::new(BvhNode::new(boxes1, 0.0, 1.0)));
     let light = Rc::new(DiffuseLight::new2(Vect3::new(7.0, 7.0, 7.0)));
@@ -437,16 +431,7 @@ fn final_scene() -> HitableList {
         )));
     }
     objects.add(Rc::new(Translate::new(
-        Rc::new(RotateY::new(
-            Rc::new(BvhNode::prinew(
-                &boxes2.objects,
-                0,
-                boxes2.objects.len(),
-                0.0,
-                1.0,
-            )),
-            15.0,
-        )),
+        Rc::new(RotateY::new(Rc::new(BvhNode::new(boxes2, 0.0, 1.0)), 15.0)),
         Vect3::new(-100.0, 270.0, 395.0),
     )));
     objects
@@ -473,11 +458,11 @@ fn main() {
     let path = "output/book2/image23.jpg";
 
     let aspect_ratio = 1.0;
-    let width = 100;
+    let width = 800;
     let height = ((width as f64) / aspect_ratio) as u32;
     let quality = 100;
     let samples_per_pixel = 1000;
-    let max_depth = 50;
+    let max_depth = 10;
     let mut img: RgbImage = ImageBuffer::new(width, height);
 
     let progress = if option_env!("CI").unwrap_or_default() == "true" {
