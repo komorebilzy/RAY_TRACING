@@ -1,6 +1,6 @@
 use crate::*;
 use std::option::Option;
-pub trait Material {
+pub trait Material: Send + Sync {
     fn scatter(&self, r_in: &Ray, rec: HitRecord) -> Option<Pair<Vect3, Ray>>;
     fn emitted(&self, _u: f64, _v: f64, _p: Vect3) -> Vect3 {
         Vect3::new(0.0, 0.0, 0.0)
@@ -8,15 +8,15 @@ pub trait Material {
 }
 
 pub struct Lambertian {
-    pub albedo: Rc<dyn Texture>,
+    pub albedo: Arc<dyn Texture>,
 }
 impl Lambertian {
     pub fn new1(a: Vect3) -> Self {
         Self {
-            albedo: (Rc::new(SolidColor::new1(a))),
+            albedo: (Arc::new(SolidColor::new1(a))),
         }
     }
-    pub fn new2(a: Rc<dyn Texture>) -> Self {
+    pub fn new2(a: Arc<dyn Texture>) -> Self {
         Self { albedo: (a) }
     }
 }
@@ -115,16 +115,16 @@ impl Material for Dielectric {
 }
 
 pub struct DiffuseLight {
-    pub emit: Rc<dyn Texture>,
+    pub emit: Arc<dyn Texture>,
 }
 
 impl DiffuseLight {
-    // pub fn new1(a: Rc<Texture>) -> Self {
+    // pub fn new1(a: Arc<Texture>) -> Self {
     //     Self { emit: (a) }
     // }
     pub fn new2(c: Vect3) -> Self {
         Self {
-            emit: (Rc::new(SolidColor::new1(c))),
+            emit: (Arc::new(SolidColor::new1(c))),
         }
     }
 }
@@ -138,15 +138,15 @@ impl Material for DiffuseLight {
 }
 
 pub struct Isotropic {
-    pub albedo: Rc<dyn Texture>,
+    pub albedo: Arc<dyn Texture>,
 }
 impl Isotropic {
     pub fn new1(c: Vect3) -> Self {
         Self {
-            albedo: (Rc::new(SolidColor::new1(c))),
+            albedo: (Arc::new(SolidColor::new1(c))),
         }
     }
-    // pub fn new2(a: Rc<dyn Texture>) -> Self {
+    // pub fn new2(a: Arc<dyn Texture>) -> Self {
     //     Self { albedo: (a) }
     // }
 }

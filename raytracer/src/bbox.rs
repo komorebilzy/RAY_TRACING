@@ -1,17 +1,18 @@
 use crate::*;
+use std::sync::Arc;
 pub struct Box {
     pub box_min: Vect3,
     pub box_max: Vect3,
     pub sides: HitableList,
 }
 impl Box {
-    pub fn new(p0: Vect3, p1: Vect3, ptr: Rc<dyn Material>) -> Self {
+    pub fn new(p0: Vect3, p1: Vect3, ptr: Arc<dyn Material>) -> Self {
         let mut ans = Box {
             box_min: (p0),
             box_max: (p1),
             sides: (HitableList::new()),
         };
-        ans.sides.add(Rc::new(XyRect::new(
+        ans.sides.add(Arc::new(XyRect::new(
             p0.x(),
             p1.x(),
             p0.y(),
@@ -19,7 +20,7 @@ impl Box {
             p1.z(),
             ptr.clone(),
         )));
-        ans.sides.add(Rc::new(XyRect::new(
+        ans.sides.add(Arc::new(XyRect::new(
             p0.x(),
             p1.x(),
             p0.y(),
@@ -27,7 +28,7 @@ impl Box {
             p0.z(),
             ptr.clone(),
         )));
-        ans.sides.add(Rc::new(XzRect::new(
+        ans.sides.add(Arc::new(XzRect::new(
             p0.x(),
             p1.x(),
             p0.z(),
@@ -35,7 +36,7 @@ impl Box {
             p1.y(),
             ptr.clone(),
         )));
-        ans.sides.add(Rc::new(XzRect::new(
+        ans.sides.add(Arc::new(XzRect::new(
             p0.x(),
             p1.x(),
             p0.z(),
@@ -43,7 +44,7 @@ impl Box {
             p0.y(),
             ptr.clone(),
         )));
-        ans.sides.add(Rc::new(YzRect::new(
+        ans.sides.add(Arc::new(YzRect::new(
             p0.y(),
             p1.y(),
             p0.z(),
@@ -51,7 +52,7 @@ impl Box {
             p1.x(),
             ptr.clone(),
         )));
-        ans.sides.add(Rc::new(YzRect::new(
+        ans.sides.add(Arc::new(YzRect::new(
             p0.y(),
             p1.y(),
             p0.z(),

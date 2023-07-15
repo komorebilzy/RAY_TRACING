@@ -1,13 +1,14 @@
 // use image::flat::SampleLayout;
 
 use crate::*;
+#[derive(Clone)]
 pub struct BvhNode {
-    pub left: Rc<dyn Hittable>,
-    pub right: Rc<dyn Hittable>,
+    pub left: Arc<dyn Hittable>,
+    pub right: Arc<dyn Hittable>,
     pub boxx: Aabb,
 }
 
-pub fn box_compare(a: &Rc<dyn Hittable>, b: &Rc<dyn Hittable>, axis: i64) -> std::cmp::Ordering {
+pub fn box_compare(a: &Arc<dyn Hittable>, b: &Arc<dyn Hittable>, axis: i64) -> std::cmp::Ordering {
     match a.bounding_box(0.0, 0.0) {
         None => std::cmp::Ordering::Less,
         Some(x) => match b.bounding_box(0.0, 0.0) {
@@ -28,21 +29,21 @@ pub fn box_compare(a: &Rc<dyn Hittable>, b: &Rc<dyn Hittable>, axis: i64) -> std
     }
 }
 
-pub fn box_x_compare(a: &Rc<dyn Hittable>, b: &Rc<dyn Hittable>) -> std::cmp::Ordering {
+pub fn box_x_compare(a: &Arc<dyn Hittable>, b: &Arc<dyn Hittable>) -> std::cmp::Ordering {
     box_compare(a, b, 0)
 }
 
-pub fn box_y_compare(a: &Rc<dyn Hittable>, b: &Rc<dyn Hittable>) -> std::cmp::Ordering {
+pub fn box_y_compare(a: &Arc<dyn Hittable>, b: &Arc<dyn Hittable>) -> std::cmp::Ordering {
     box_compare(a, b, 1)
 }
 
-pub fn box_z_compare(a: &Rc<dyn Hittable>, b: &Rc<dyn Hittable>) -> std::cmp::Ordering {
+pub fn box_z_compare(a: &Arc<dyn Hittable>, b: &Arc<dyn Hittable>) -> std::cmp::Ordering {
     box_compare(a, b, 2)
 }
 
 impl BvhNode {
     pub fn prinew(
-        src_objects: &mut [Rc<dyn Hittable>],
+        src_objects: &mut [Arc<dyn Hittable>],
         start: usize,
         end: usize,
         time0: f64,
@@ -76,8 +77,8 @@ impl BvhNode {
         } else if object_span != 1 {
             src_objects[start..end].sort_by(comparator);
             let mid = start + object_span / 2;
-            ans.left = Rc::new(BvhNode::prinew(src_objects, start, mid, time0, time1));
-            ans.right = Rc::new(BvhNode::prinew(src_objects, mid, end, time0, time1));
+            ans.left = Arc::new(BvhNode::prinew(src_objects, start, mid, time0, time1));
+            ans.right = Arc::new(BvhNode::prinew(src_objects, mid, end, time0, time1));
         }
         let left = ans.left.bounding_box(time0, time1);
         let right = ans.right.bounding_box(time0, time1);

@@ -1,8 +1,8 @@
 use crate::*;
 use std::option::Option;
-use std::rc::Rc;
+#[derive(Clone)]
 pub struct HitableList {
-    pub objects: Vec<Rc<dyn Hittable>>,
+    pub objects: Vec<Arc<dyn Hittable>>,
 }
 impl HitableList {
     pub fn new() -> Self {
@@ -10,7 +10,7 @@ impl HitableList {
             objects: Vec::new(),
         }
     }
-    pub fn add(&mut self, object: Rc<dyn Hittable>) {
+    pub fn add(&mut self, object: Arc<dyn Hittable>) {
         self.objects.push(object)
     }
 }

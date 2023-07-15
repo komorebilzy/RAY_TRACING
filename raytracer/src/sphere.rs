@@ -3,10 +3,10 @@ use crate::*;
 pub struct Sphere {
     pub center: Vect3,
     pub radius: f64,
-    pub mat_ptr: Rc<dyn Material>,
+    pub mat_ptr: Arc<dyn Material>,
 }
 impl Sphere {
-    pub fn new(cen: Vect3, r: f64, m: Rc<dyn Material>) -> Self {
+    pub fn new(cen: Vect3, r: f64, m: Arc<dyn Material>) -> Self {
         Self {
             center: (cen),
             radius: (r),

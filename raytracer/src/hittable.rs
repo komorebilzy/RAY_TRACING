@@ -1,17 +1,16 @@
 use crate::*;
-use std::rc::Rc;
 #[derive(Clone)]
 pub struct HitRecord {
     pub t: f64,
     pub p: Vect3,
     pub normal: Vect3,
     pub front_face: bool,
-    pub mat_ptr: Rc<dyn Material>,
+    pub mat_ptr: Arc<dyn Material>,
     pub u: f64,
     pub v: f64,
 }
 impl HitRecord {
-    pub fn new(tt: f64, pp: Vect3, m: &Rc<dyn Material>) -> Self {
+    pub fn new(tt: f64, pp: Vect3, m: &Arc<dyn Material>) -> Self {
         Self {
             t: (tt),
             p: (pp),
@@ -31,17 +30,17 @@ impl HitRecord {
         }
     }
 }
-pub trait Hittable {
+pub trait Hittable: Send + Sync {
     fn hit(&self, _r: &Ray, _t_min: f64, _t_max: f64) -> Option<HitRecord>;
     fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb>;
 }
 
 pub struct Translate {
-    pub ptr: Rc<dyn Hittable>,
+    pub ptr: Arc<dyn Hittable>,
     pub offset: Vect3,
 }
 impl Translate {
-    pub fn new(p: Rc<dyn Hittable>, displacement: Vect3) -> Self {
+    pub fn new(p: Arc<dyn Hittable>, displacement: Vect3) -> Self {
         Self {
             ptr: (p),
             offset: (displacement),
@@ -75,14 +74,14 @@ impl Hittable for Translate {
 }
 
 pub struct RotateY {
-    ptr: Rc<dyn Hittable>,
+    ptr: Arc<dyn Hittable>,
     sin_theta: f64,
     cos_theta: f64,
     bbox: Option<Aabb>,
 }
 
 impl RotateY {
-    pub fn new(p: Rc<dyn Hittable>, angle: f64) -> Self {
+    pub fn new(p: Arc<dyn Hittable>, angle: f64) -> Self {
         let radians = degrees_to_radians(angle);
         let infinity = f64::INFINITY;
         let mut min = Vect3::new(infinity, infinity, infinity);

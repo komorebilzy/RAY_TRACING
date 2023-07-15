@@ -1,4 +1,5 @@
 use crate::*;
+#[derive(Clone)]
 pub struct Camera {
     origin: Vect3,
     lower_left_corner: Vect3,

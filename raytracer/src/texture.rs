@@ -1,7 +1,7 @@
 use image::GenericImageView;
 
 use crate::*;
-pub trait Texture {
+pub trait Texture: Send + Sync {
     fn value(&self, u: f64, v: f64, p: Vect3) -> Vect3;
 }
 
@@ -26,12 +26,12 @@ impl Texture for SolidColor {
 }
 
 pub struct CheckerTexture {
-    pub odd: Rc<dyn Texture>,
-    pub even: Rc<dyn Texture>,
+    pub odd: Arc<dyn Texture>,
+    pub even: Arc<dyn Texture>,
 }
 
 impl CheckerTexture {
-    // pub fn new1(_even: Rc<dyn Texture>, _odd: Rc<dyn Texture>) -> Self {
+    // pub fn new1(_even: Arc<dyn Texture>, _odd: Arc<dyn Texture>) -> Self {
     //     Self {
     //         odd: (_odd),
     //         even: (_even),
@@ -39,8 +39,8 @@ impl CheckerTexture {
     // }
     // pub fn new2(c1: Vect3, c2: Vect3) -> Self {
     //     Self {
-    //         odd: (Rc::new(SolidColor::new1(c2))),
-    //         even: (Rc::new(SolidColor::new1(c1))),
+    //         odd: (Arc::new(SolidColor::new1(c2))),
+    //         even: (Arc::new(SolidColor::new1(c1))),
     //     }
     // }
 }
