@@ -388,7 +388,7 @@ fn main() {
                     s += 1;
                 }
                 color_list.push((pixel, pixel_color));
-                num = num + 1;
+                num += 1;
                 if num == width {
                     num = 0;
                     pb.inc(1);
