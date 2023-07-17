@@ -308,7 +308,7 @@ fn ray_color(r: &Ray, background: Vect3, world: &dyn Hittable, depth: i64) -> Ve
 // }
 fn main() {
     // let path = "output/book3/image4.jpg";
-    let path = std::path::Path::new("output/test/test1.jpg");
+    let path = std::path::Path::new("output/book3/image3.jpg");
     let prefix = path.parent().unwrap();
     std::fs::create_dir_all(prefix).expect("Cannot create all parent directories");
 
