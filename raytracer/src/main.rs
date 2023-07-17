@@ -307,7 +307,10 @@ fn ray_color(r: &Ray, background: Vect3, world: &dyn Hittable, depth: i64) -> Ve
 //     }
 // }
 fn main() {
-    let path = "output/book3/image3.jpg";
+    // let path = "output/book3/image4.jpg";
+    let path = std::path::Path::new("output/test/test1.jpg");
+    let prefix = path.parent().unwrap();
+    std::fs::create_dir_all(prefix).expect("Cannot create all parent directories");
 
     let aspect_ratio = 1.0;
     let width = 600;
@@ -368,10 +371,11 @@ fn main() {
         let _world = world.clone();
         let _cam = cam.clone();
         let _pixel_pos = pixel_pos.clone();
-        let pb = multi_progress.add(ProgressBar::new((_pixel_pos.len()) as u64));
+        let pb = multi_progress.add(ProgressBar::new((_pixel_pos.len() / width as usize) as u64));
         pb.set_prefix(format!("Process {}", k));
         let handle = thread::spawn(move || {
             let mut color_list: Vec<(Position, Vect3)> = Vec::new();
+            let mut num = 0;
             for pixel in _pixel_pos {
                 let mut pixel_color = Vect3::new(0.0, 0.0, 0.0);
                 let mut s = 0;
@@ -384,7 +388,11 @@ fn main() {
                     s += 1;
                 }
                 color_list.push((pixel, pixel_color));
-                pb.inc(1);
+                num = num + 1;
+                if num == width {
+                    num = 0;
+                    pb.inc(1);
+                }
             }
             tx.send(color_list).unwrap();
             pb.finish();
@@ -435,7 +443,10 @@ fn main() {
     // }
     // progress.finish();
 
-    println!("Ouput image as \"{}\"", style(path).yellow());
+    println!(
+        "Ouput image as \"{}\"",
+        style(path.to_str().unwrap()).yellow()
+    );
     let output_image = image::DynamicImage::ImageRgb8(img);
     let mut output_file = File::create(path).unwrap();
     match output_image.write_to(&mut output_file, image::ImageOutputFormat::Jpeg(quality)) {
