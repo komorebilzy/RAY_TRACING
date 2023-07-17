@@ -244,12 +244,16 @@ fn ray_color(r: &Ray, background: Vect3, world: &dyn Hittable, depth: i64) -> Ve
         return Vect3::new(0.0, 0.0, 0.0);
     }
     let infinity = f64::INFINITY;
+    let mut pdf = 0.0;
     let rec = world.hit(r, 0.001, infinity);
     match rec {
-        Some(x) => match x.mat_ptr.scatter(r, x.clone()) {
+        Some(x) => match x.mat_ptr.scatter(r, x.clone(), &mut pdf) {
             Some(y) => {
                 x.mat_ptr.emitted(x.u, x.v, x.p)
-                    + y.first * ray_color(&y.second, background, world, depth - 1)
+                    + y.first
+                        * x.mat_ptr.scattering_pdf(r, x.clone(), &y.second)
+                        * ray_color(&y.second, background, world, depth - 1)
+                        / pdf
             }
             None => x.mat_ptr.emitted(x.u, x.v, x.p),
         },
@@ -257,7 +261,7 @@ fn ray_color(r: &Ray, background: Vect3, world: &dyn Hittable, depth: i64) -> Ve
     }
 }
 fn main() {
-    let path = "output/book3/image1.jpg";
+    let path = "output/book3/image2.jpg";
 
     let aspect_ratio = 1.0;
     let width = 600;
