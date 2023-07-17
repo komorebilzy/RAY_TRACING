@@ -10,23 +10,23 @@ pub struct MovingSphere {
 }
 
 impl MovingSphere {
-    pub fn new(
-        cen0: Vect3,
-        cen1: Vect3,
-        _time0: f64,
-        _time1: f64,
-        r: f64,
-        m: Arc<dyn Material>,
-    ) -> Self {
-        Self {
-            center0: (cen0),
-            center1: (cen1),
-            time0: (_time0),
-            time1: (_time1),
-            radius: (r),
-            mat_ptr: (m),
-        }
-    }
+    // pub fn new(
+    //     cen0: Vect3,
+    //     cen1: Vect3,
+    //     _time0: f64,
+    //     _time1: f64,
+    //     r: f64,
+    //     m: Arc<dyn Material>,
+    // ) -> Self {
+    //     Self {
+    //         center0: (cen0),
+    //         center1: (cen1),
+    //         time0: (_time0),
+    //         time1: (_time1),
+    //         radius: (r),
+    //         mat_ptr: (m),
+    //     }
+    // }
 
     pub fn center(&self, time: f64) -> Vect3 {
         self.center0

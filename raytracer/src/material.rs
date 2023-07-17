@@ -16,9 +16,9 @@ impl Lambertian {
             albedo: (Arc::new(SolidColor::new1(a))),
         }
     }
-    pub fn new2(a: Arc<dyn Texture>) -> Self {
-        Self { albedo: (a) }
-    }
+    // pub fn new2(a: Arc<dyn Texture>) -> Self {
+    //     Self { albedo: (a) }
+    // }
 }
 impl Material for Lambertian {
     fn scatter(&self, _r_in: &Ray, rec: HitRecord) -> Option<Pair<Vect3, Ray>> {
@@ -39,12 +39,12 @@ pub struct Metal {
 }
 
 impl Metal {
-    pub fn new(a: Vect3, f: f64) -> Self {
-        Self {
-            albedo: (a),
-            fuzz: (if f < 1.0 { f } else { 1.0 }),
-        }
-    }
+    // pub fn new(a: Vect3, f: f64) -> Self {
+    //     Self {
+    //         albedo: (a),
+    //         fuzz: (if f < 1.0 { f } else { 1.0 }),
+    //     }
+    // }
 }
 
 impl Material for Metal {
@@ -78,11 +78,11 @@ pub struct Dielectric {
     pub ir: f64,
 }
 impl Dielectric {
-    pub fn new(index_of_refractiom: f64) -> Self {
-        Self {
-            ir: (index_of_refractiom),
-        }
-    }
+    // pub fn new(index_of_refractiom: f64) -> Self {
+    //     Self {
+    //         ir: (index_of_refractiom),
+    //     }
+    // }
     pub fn reflectance(cosine: f64, ref_idx: f64) -> f64 {
         let mut r = (1.0 - ref_idx) / (1.0 + ref_idx);
         r = r * r;
@@ -141,11 +141,11 @@ pub struct Isotropic {
     pub albedo: Arc<dyn Texture>,
 }
 impl Isotropic {
-    pub fn new1(c: Vect3) -> Self {
-        Self {
-            albedo: (Arc::new(SolidColor::new1(c))),
-        }
-    }
+    // pub fn new1(c: Vect3) -> Self {
+    //     Self {
+    //         albedo: (Arc::new(SolidColor::new1(c))),
+    //     }
+    // }
     // pub fn new2(a: Arc<dyn Texture>) -> Self {
     //     Self { albedo: (a) }
     // }
