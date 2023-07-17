@@ -263,6 +263,49 @@ fn ray_color(r: &Ray, background: Vect3, world: &dyn Hittable, depth: i64) -> Ve
         None => background,
     }
 }
+
+// fn ray_color(r: &Ray, background: Vect3, world: &dyn Hittable, depth: i64) -> Vect3 {
+//     if depth <= 0 {
+//         return Vect3::new(0.0, 0.0, 0.0);
+//     }
+//     let infinity = f64::INFINITY;
+//     let mut pdf = 0.0;
+//     let rec = world.hit(r, 0.001, infinity);
+//     match rec {
+//         Some(x) => {
+//             let emitted = x.mat_ptr.emitted(x.u, x.v, x.p);
+//             match x.mat_ptr.scatter(r, x.clone(), &mut pdf) {
+//                 Some(y) => {
+//                     let on_light = Vect3::new(
+//                         random_double_rng(213.0, 343.0),
+//                         554.0,
+//                         random_double_rng(227.0, 332.0),
+//                     );
+//                     let mut to_light = on_light - x.p;
+//                     let distance_squred = to_light.squared_length();
+//                     to_light = unit_vector(to_light);
+//                     if dot(to_light, x.normal) < 0.0 {
+//                         return emitted;
+//                     }
+//                     let light_area = (343.0 - 213.0) * (332.0 - 227.0);
+//                     let light_cosine = to_light.y().abs();
+//                     if light_cosine < 0.000001 {
+//                         return emitted;
+//                     }
+//                     let pdf = distance_squred / (light_cosine * light_area);
+//                     let scattered = Ray::new(x.p, to_light, r.time());
+//                     emitted
+//                         + y.first
+//                             * x.mat_ptr.scattering_pdf(r, x.clone(), &scattered)
+//                             * ray_color(&scattered, background, world, depth - 1)
+//                             / pdf
+//                 }
+//                 None => emitted,
+//             }
+//         }
+//         None => background,
+//     }
+// }
 fn main() {
     let path = "output/book3/image3.jpg";
 
@@ -270,7 +313,7 @@ fn main() {
     let width = 600;
     let height = ((width as f64) / aspect_ratio) as u32;
     let quality = 100;
-    let samples_per_pixel = 1000;
+    let samples_per_pixel = 100;
     let max_depth = 50;
     let mut img: RgbImage = ImageBuffer::new(width, height);
 
@@ -304,7 +347,7 @@ fn main() {
         (0.0, 1.0),
     );
 
-    const THREAD_NUM: usize = 20;
+    const THREAD_NUM: usize = 14;
     let mut threads: Vec<JoinHandle<()>> = Vec::new();
     let mut recv: Vec<_> = Vec::new();
     let mut pixel_list: Vec<Vec<_>> = Vec::new();

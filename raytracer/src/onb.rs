@@ -42,18 +42,14 @@ impl Onb {
     pub fn local2(&self, a: Vect3) -> Vect3 {
         self.u() * a.x() + self.v() * a.y() + self.w() * a.z()
     }
-    pub fn build_from_w(&self, n: Vect3) -> Self {
+    pub fn build_from_w(&mut self, n: Vect3) {
+        self.axis[2] = unit_vector(n);
         let a = if self.w().x().abs() > 0.9 {
             Vect3::new(0.0, 1.0, 0.0)
         } else {
             Vect3::new(1.0, 0.0, 0.0)
         };
-        Self {
-            axis: [
-                cross(self.w(), self.v()),
-                unit_vector(cross(self.w(), a)),
-                unit_vector(n),
-            ],
-        }
+        self.axis[1] = cross(self.w(), a);
+        self.axis[0] = cross(self.w(), self.v());
     }
 }

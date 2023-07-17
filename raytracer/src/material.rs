@@ -30,7 +30,7 @@ impl Lambertian {
 impl Material for Lambertian {
     fn scatter(&self, _r_in: &Ray, rec: HitRecord, pdf: &mut f64) -> Option<Pair<Vect3, Ray>> {
         let mut uvw = Onb::default();
-        uvw = uvw.build_from_w(rec.normal);
+        uvw.build_from_w(rec.normal);
         let direction = uvw.local2(random_cosine_direction());
         let scattered = Ray::new(rec.p, unit_vector(direction), _r_in.time());
         let alb = self.albedo.value(rec.u, rec.v, rec.p);
