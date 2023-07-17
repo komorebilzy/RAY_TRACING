@@ -53,6 +53,9 @@ mod constant_medium;
 mod color;
 use color::*;
 
+mod onb;
+use onb::*;
+
 use console::style;
 use image::{ImageBuffer, RgbImage};
 use indicatif::{MultiProgress, ProgressBar};
@@ -261,7 +264,7 @@ fn ray_color(r: &Ray, background: Vect3, world: &dyn Hittable, depth: i64) -> Ve
     }
 }
 fn main() {
-    let path = "output/book3/image2.jpg";
+    let path = "output/book3/image3.jpg";
 
     let aspect_ratio = 1.0;
     let width = 600;
@@ -301,7 +304,7 @@ fn main() {
         (0.0, 1.0),
     );
 
-    const THREAD_NUM: usize = 10;
+    const THREAD_NUM: usize = 20;
     let mut threads: Vec<JoinHandle<()>> = Vec::new();
     let mut recv: Vec<_> = Vec::new();
     let mut pixel_list: Vec<Vec<_>> = Vec::new();

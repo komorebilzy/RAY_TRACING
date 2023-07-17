@@ -1,4 +1,5 @@
 use crate::*;
+use std::f64::consts::PI;
 use std::io::{self, Read};
 use std::ops::{self, AddAssign, DivAssign, MulAssign, SubAssign};
 #[derive(Debug, Clone, Copy)]
@@ -247,27 +248,19 @@ pub fn random_in_unit_sphere() -> Vect3 {
 //     unit_vector(random_in_unit_sphere())
 // }
 
-pub fn random_in_hemisphere(normal: Vect3) -> Vect3 {
-    let in_unit_sphere = random_in_unit_sphere();
-    if dot(in_unit_sphere, normal) > 0.0 {
-        in_unit_sphere
-    } else {
-        -in_unit_sphere
-    }
-}
+// pub fn random_in_hemisphere(normal: Vect3) -> Vect3 {
+//     let in_unit_sphere = random_in_unit_sphere();
+//     if dot(in_unit_sphere, normal) > 0.0 {
+//         in_unit_sphere
+//     } else {
+//         -in_unit_sphere
+//     }
+// }
 
 pub fn reflect(v: Vect3, n: Vect3) -> Vect3 {
     v - (n * dot(v, n)) * 2.0
 }
 
-// pub fn random_in_hemisphere(normal: Vect3) -> Vect3 {
-//     let in_unit_sphere = random_in_unit_sphere();
-//     if dot(in_unit_sphere, normal) > 0.0 {
-//         return in_unit_sphere;
-//     } else {
-//         return -in_unit_sphere;
-//     }
-// }
 pub fn refract(uv: Vect3, n: Vect3, etai_over_etat: f64) -> Vect3 {
     let cos_theta: f64 = if dot(-uv, n) < 1.0 { dot(-uv, n) } else { 1.0 };
     let r_out_perp = (uv + n * cos_theta) * etai_over_etat;
@@ -287,4 +280,14 @@ pub fn random_in_unit_disk() -> Vect3 {
         }
         return p;
     }
+}
+
+pub fn random_cosine_direction() -> Vect3 {
+    let r1 = random_double();
+    let r2 = random_double();
+    let z = (1.0 - r2).sqrt();
+    let phi = 2.0 * PI * r1;
+    let x = phi.cos() * r2.sqrt();
+    let y = phi.sin() * r2.sqrt();
+    Vect3::new(x, y, z)
 }

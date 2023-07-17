@@ -29,19 +29,21 @@ impl Lambertian {
 }
 impl Material for Lambertian {
     fn scatter(&self, _r_in: &Ray, rec: HitRecord, pdf: &mut f64) -> Option<Pair<Vect3, Ray>> {
-        let direction = random_in_hemisphere(rec.normal);
+        let mut uvw = Onb::default();
+        uvw = uvw.build_from_w(rec.normal);
+        let direction = uvw.local2(random_cosine_direction());
         let scattered = Ray::new(rec.p, unit_vector(direction), _r_in.time());
-        let attenuation = self.albedo.value(rec.u, rec.v, rec.p);
-        *pdf = 0.5 / PI;
-        let ans = Pair::new(attenuation, scattered);
+        let alb = self.albedo.value(rec.u, rec.v, rec.p);
+        *pdf = dot(uvw.w(), scattered.direction()) / PI;
+        let ans = Pair::new(alb, scattered);
         Some(ans)
     }
     fn scattering_pdf(&self, _r_in: &Ray, _rec: HitRecord, _scattered: &Ray) -> f64 {
         let cosin = dot(_rec.normal, unit_vector(_scattered.direction()));
         if cosin < 0.0 {
-            return 0.0;
+            0.0
         } else {
-            return cosin / PI;
+            cosin / PI
         }
     }
 }
