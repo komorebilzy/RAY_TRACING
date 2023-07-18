@@ -11,11 +11,11 @@ pub struct CosinePdf {
     uvw: Onb,
 }
 impl CosinePdf {
-    // pub fn new(w: Vect3) -> Self {
-    //     let mut uv = Onb::default();
-    //     uv.build_from_w(w);
-    //     Self { uvw: (uv) }
-    // }
+    pub fn new(w: Vect3) -> Self {
+        let mut uv = Onb::default();
+        uv.build_from_w(w);
+        Self { uvw: (uv) }
+    }
 }
 
 impl Pdf for CosinePdf {
@@ -51,5 +51,26 @@ impl Pdf for HittablePdf {
     }
     fn generate(&self) -> Vect3 {
         self.ptr.random(self.o)
+    }
+}
+
+pub struct MixturePdf {
+    pub p: [Arc<dyn Pdf>; 2],
+}
+impl MixturePdf {
+    pub fn new(p0: Arc<dyn Pdf>, p1: Arc<dyn Pdf>) -> Self {
+        Self { p: [p0, p1] }
+    }
+}
+impl Pdf for MixturePdf {
+    fn generate(&self) -> Vect3 {
+        if random_double() < 0.5 {
+            self.p[0].generate()
+        } else {
+            self.p[1].generate()
+        }
+    }
+    fn value(&self, direction: Vect3) -> f64 {
+        0.5 * self.p[0].value(direction) + 0.5 * self.p[1].value(direction)
     }
 }

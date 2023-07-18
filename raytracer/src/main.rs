@@ -184,9 +184,12 @@ fn ray_color(
                     // pdf_val = distance_squred / (light_cosine * light_area);
                     // let scattered = Ray::new(x.p, to_light, r.time());
                     // let p = CosinePdf::new(x.normal);
-                    let light_pdf = HittablePdf::new(lights.clone(), x.p);
-                    let scattered = Ray::new(x.p, light_pdf.generate(), r.time());
-                    pdf_val = light_pdf.value(scattered.direction());
+                    // let light_pdf = HittablePdf::new(lights.clone(), x.p);
+                    let p0 = Arc::new(HittablePdf::new(lights.clone(), x.p));
+                    let p1 = Arc::new(CosinePdf::new(x.normal));
+                    let mixef_pdf = MixturePdf::new(p0, p1);
+                    let scattered = Ray::new(x.p, mixef_pdf.generate(), r.time());
+                    pdf_val = mixef_pdf.value(scattered.direction());
                     emitted
                         + y.first
                             * x.mat_ptr.scattering_pdf(r, x.clone(), &scattered)
@@ -200,7 +203,7 @@ fn ray_color(
     }
 }
 fn main() {
-    let path = std::path::Path::new("output/book3/image7.jpg");
+    let path = std::path::Path::new("output/book3/image8.jpg");
     let prefix = path.parent().unwrap();
     std::fs::create_dir_all(prefix).expect("Cannot create all parent directories");
 
