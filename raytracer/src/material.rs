@@ -5,7 +5,7 @@ pub trait Material: Send + Sync {
         None
     }
 
-    fn emitted(&self, _u: f64, _v: f64, _p: Vect3) -> Vect3 {
+    fn emitted(&self, _r_in: Ray, _rec: HitRecord, _u: f64, _v: f64, _p: Vect3) -> Vect3 {
         Vect3::new(0.0, 0.0, 0.0)
     }
 
@@ -147,8 +147,13 @@ impl Material for DiffuseLight {
     fn scatter(&self, _r_in: &Ray, _rec: HitRecord, _pdf: &mut f64) -> Option<Pair<Vect3, Ray>> {
         None
     }
-    fn emitted(&self, _u: f64, _v: f64, _p: Vect3) -> Vect3 {
-        self.emit.value(_u, _v, _p)
+    fn emitted(&self, _r_in: Ray, _rec: HitRecord, _u: f64, _v: f64, _p: Vect3) -> Vect3 {
+        // self.emit.value(_u, _v, _p)
+        if _rec.front_face {
+            self.emit.value(_u, _v, _p)
+        } else {
+            Vect3::new(0.0, 0.0, 0.0)
+        }
     }
 }
 

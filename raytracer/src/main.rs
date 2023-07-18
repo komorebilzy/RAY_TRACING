@@ -72,9 +72,12 @@ fn cornell_box() -> HitableList {
     let light = Arc::new(DiffuseLight::new2(Vect3::new(15.0, 15.0, 15.0)));
     objects.add(Arc::new(YzRect::new(0.0, 555.0, 0.0, 555.0, 555.0, green)));
     objects.add(Arc::new(YzRect::new(0.0, 555.0, 0.0, 555.0, 0.0, red)));
-    objects.add(Arc::new(XzRect::new(
+    // objects.add(Arc::new(XzRect::new(
+    //     213.0, 343.0, 227.0, 332.0, 554.0, light,
+    // )));
+    objects.add(Arc::new(FlipFace::new(Arc::new(XzRect::new(
         213.0, 343.0, 227.0, 332.0, 554.0, light,
-    )));
+    )))));
     objects.add(Arc::new(XzRect::new(
         0.0,
         555.0,
@@ -273,7 +276,7 @@ fn ray_color(r: &Ray, background: Vect3, world: &dyn Hittable, depth: i64) -> Ve
     let rec = world.hit(r, 0.001, infinity);
     match rec {
         Some(x) => {
-            let emitted = x.mat_ptr.emitted(x.u, x.v, x.p);
+            let emitted = x.mat_ptr.emitted(*r, x.clone(), x.u, x.v, x.p);
             match x.mat_ptr.scatter(r, x.clone(), &mut pdf) {
                 Some(y) => {
                     let on_light = Vect3::new(
@@ -308,7 +311,7 @@ fn ray_color(r: &Ray, background: Vect3, world: &dyn Hittable, depth: i64) -> Ve
 }
 fn main() {
     // let path = "output/book3/image4.jpg";
-    let path = std::path::Path::new("output/book3/image4.jpg");
+    let path = std::path::Path::new("output/book3/image5.jpg");
     let prefix = path.parent().unwrap();
     std::fs::create_dir_all(prefix).expect("Cannot create all parent directories");
 
