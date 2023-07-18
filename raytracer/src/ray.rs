@@ -10,6 +10,7 @@ impl Ray {
     //     Self {
     //         a: (Vect3::default()),
     //         b: (Vect3::default()),
+    //         tm: 0.0,
     //     }
     // }
     pub fn new(a: Vect3, b: Vect3, t: f64) -> Self {

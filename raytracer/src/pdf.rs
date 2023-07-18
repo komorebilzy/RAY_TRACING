@@ -7,6 +7,18 @@ pub trait Pdf {
     fn generate(&self) -> Vect3;
 }
 
+#[derive(Clone, Copy)]
+pub struct EmptyPdf {}
+impl Pdf for EmptyPdf {
+    fn generate(&self) -> Vect3 {
+        Vect3::default()
+    }
+    fn value(&self, _direction: Vect3) -> f64 {
+        0.0
+    }
+}
+pub const DEFAULT_PDF: EmptyPdf = EmptyPdf {};
+
 pub struct CosinePdf {
     uvw: Onb,
 }

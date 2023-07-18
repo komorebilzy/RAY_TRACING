@@ -53,4 +53,16 @@ impl Hittable for HitableList {
         }
         Some(output_box)
     }
+    fn pdf_value(&self, o: Vect3, v: Vect3) -> f64 {
+        let weight = 1.0 / self.objects.len() as f64;
+        let mut sum = 0.0;
+        for object in self.objects.clone() {
+            sum += weight * object.pdf_value(o, v);
+        }
+        sum
+    }
+    fn random(&self, o: Vect3) -> Vect3 {
+        let int_size: i64 = self.objects.len() as i64;
+        self.objects[random_int(0, int_size - 1) as usize].random(o)
+    }
 }

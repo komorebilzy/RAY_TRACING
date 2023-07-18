@@ -1,7 +1,14 @@
 use crate::*;
 use std::{f64::consts::PI, option::Option};
+#[derive(Clone)]
+pub struct ScatterRecord {
+    pub specular_ray: Ray,
+    pub is_specular: bool,
+    pub attenuation: Vect3,
+    pub pdf_ptr: Arc<dyn Pdf>,
+}
 pub trait Material: Send + Sync {
-    fn scatter(&self, _r_in: &Ray, _rec: HitRecord, _pdf: &mut f64) -> Option<Pair<Vect3, Ray>> {
+    fn scatter(&self, _r_in: &Ray, _rec: HitRecord) -> Option<ScatterRecord> {
         None
     }
 
@@ -33,14 +40,13 @@ impl Lambertian {
     // }
 }
 impl Material for Lambertian {
-    fn scatter(&self, _r_in: &Ray, rec: HitRecord, pdf: &mut f64) -> Option<Pair<Vect3, Ray>> {
-        let mut uvw = Onb::default();
-        uvw.build_from_w(rec.normal);
-        let direction = uvw.local2(random_cosine_direction());
-        let scattered = Ray::new(rec.p, unit_vector(direction), _r_in.time());
-        let alb = self.albedo.value(rec.u, rec.v, rec.p);
-        *pdf = dot(uvw.w(), scattered.direction()) / PI;
-        let ans = Pair::new(alb, scattered);
+    fn scatter(&self, _r_in: &Ray, rec: HitRecord) -> Option<ScatterRecord> {
+        let ans = ScatterRecord {
+            specular_ray: (*_r_in),
+            is_specular: (false),
+            attenuation: (self.albedo.value(rec.u, rec.v, rec.p)),
+            pdf_ptr: (Arc::new(CosinePdf::new(rec.normal))),
+        };
         Some(ans)
     }
     fn scattering_pdf(&self, _r_in: &Ray, _rec: HitRecord, _scattered: &Ray) -> f64 {
@@ -59,30 +65,29 @@ pub struct Metal {
 }
 
 impl Metal {
-    // pub fn new(a: Vect3, f: f64) -> Self {
-    //     Self {
-    //         albedo: (a),
-    //         fuzz: (if f < 1.0 { f } else { 1.0 }),
-    //     }
-    // }
+    pub fn new(a: Vect3, f: f64) -> Self {
+        Self {
+            albedo: (a),
+            fuzz: (if f < 1.0 { f } else { 1.0 }),
+        }
+    }
 }
 
 impl Material for Metal {
-    fn scatter(&self, r_in: &Ray, rec: HitRecord, _pdf: &mut f64) -> Option<Pair<Vect3, Ray>> {
+    fn scatter(&self, r_in: &Ray, rec: HitRecord) -> Option<ScatterRecord> {
         let reflected = reflect(unit_vector(r_in.direction()), rec.normal);
         let scattered = Ray::new(
             rec.p,
             reflected + random_in_unit_sphere() * self.fuzz,
             r_in.time(),
         );
-        let attenuation = self.albedo;
-        let ans = Pair::new(attenuation, scattered);
-
-        if dot(scattered.direction(), rec.normal) > 0.0 {
-            Some(ans)
-        } else {
-            None
-        }
+        let ans = ScatterRecord {
+            specular_ray: scattered,
+            attenuation: self.albedo,
+            is_specular: true,
+            pdf_ptr: Arc::new(DEFAULT_PDF),
+        };
+        Some(ans)
     }
 }
 
@@ -110,8 +115,7 @@ impl Dielectric {
     }
 }
 impl Material for Dielectric {
-    fn scatter(&self, r_in: &Ray, rec: HitRecord, _pdf: &mut f64) -> Option<Pair<Vect3, Ray>> {
-        let attenuation = Vect3::new(1.0, 1.0, 1.0);
+    fn scatter(&self, r_in: &Ray, rec: HitRecord) -> Option<ScatterRecord> {
         let refraction_ratio = if rec.front_face {
             1.0 / self.ir
         } else {
@@ -129,7 +133,12 @@ impl Material for Dielectric {
             refract(unit_direction, rec.normal, refraction_ratio)
         };
         let scattered = Ray::new(rec.p, direction, r_in.time());
-        let ans = Pair::new(attenuation, scattered);
+        let ans = ScatterRecord {
+            specular_ray: (scattered),
+            is_specular: (true),
+            attenuation: (Vect3::new(1.0, 1.0, 1.0)),
+            pdf_ptr: (Arc::new(DEFAULT_PDF)),
+        };
         Some(ans)
     }
 }
@@ -149,7 +158,7 @@ impl DiffuseLight {
     }
 }
 impl Material for DiffuseLight {
-    fn scatter(&self, _r_in: &Ray, _rec: HitRecord, _pdf: &mut f64) -> Option<Pair<Vect3, Ray>> {
+    fn scatter(&self, _r_in: &Ray, _rec: HitRecord) -> Option<ScatterRecord> {
         None
     }
     fn emitted(&self, _r_in: Ray, _rec: HitRecord, _u: f64, _v: f64, _p: Vect3) -> Vect3 {
@@ -176,10 +185,13 @@ impl Isotropic {
     // }
 }
 impl Material for Isotropic {
-    fn scatter(&self, r_in: &Ray, rec: HitRecord, _pdf: &mut f64) -> Option<Pair<Vect3, Ray>> {
-        Some(Pair {
-            first: (self.albedo.value(rec.u, rec.v, rec.p)),
-            second: (Ray::new(rec.p, random_in_unit_sphere(), r_in.time())),
-        })
+    fn scatter(&self, r_in: &Ray, rec: HitRecord) -> Option<ScatterRecord> {
+        let ans = ScatterRecord {
+            specular_ray: (Ray::new(rec.p, random_in_unit_sphere(), r_in.time())),
+            is_specular: (true),
+            attenuation: (self.albedo.value(rec.u, rec.v, rec.p)),
+            pdf_ptr: (Arc::new(DEFAULT_PDF)),
+        };
+        Some(ans)
     }
 }

@@ -24,7 +24,7 @@ mod material;
 use material::*;
 
 mod pair;
-use pair::*;
+// use pair::*;
 
 mod moving_sphere;
 // use moving_sphere::*;
@@ -115,15 +115,22 @@ fn cornell_box() -> HitableList {
     //     Vect3::new(430.0, 330.0, 460.0),
     //     white.clone(),
     // )));
+    let aluminum: Arc<dyn Material> = Arc::new(Metal::new(Vect3::new(0.8, 0.85, 0.88), 0.0));
     let mut box1: Arc<dyn Hittable> = Arc::new(Box::new(
         Vect3::new(0.0, 0.0, 0.0),
         Vect3::new(165.0, 330.0, 165.0),
-        white.clone(),
+        aluminum,
     ));
     box1 = Arc::new(RotateY::new(box1, 15.0));
     box1 = Arc::new(Translate::new(box1, Vect3::new(265.0, 0.0, 295.0)));
     objects.add(box1.clone());
 
+    // let glass = Arc::new(Dielectric::new(1.5));
+    // objects.add(Arc::new(Sphere::new(
+    //     Vect3::new(190.0, 90.0, 190.0),
+    //     90.0,
+    //     glass,
+    // )));
     let mut box2: Arc<dyn Hittable> = Arc::new(Box::new(
         Vect3::new(0.0, 0.0, 0.0),
         Vect3::new(165.0, 165.0, 165.0),
@@ -132,18 +139,6 @@ fn cornell_box() -> HitableList {
     box2 = Arc::new(RotateY::new(box2, -18.0));
     box2 = Arc::new(Translate::new(box2, Vect3::new(130.0, 0.0, 65.0)));
     objects.add(box2.clone());
-
-    // objects.add(Arc::new(ConstantMedium::new2(
-    //     box1,
-    //     0.01,
-    //     Vect3::new(0.0, 0.0, 0.0),
-    // )));
-    // objects.add(Arc::new(ConstantMedium::new2(
-    //     box2,
-    //     0.01,
-    //     Vect3::new(1.0, 1.0, 1.0),
-    // )));
-
     objects
 }
 
@@ -158,43 +153,26 @@ fn ray_color(
         return Vect3::new(0.0, 0.0, 0.0);
     }
     let infinity = f64::INFINITY;
-    let mut pdf_val = 0.0;
+    let mut _pdf_val = 0.0;
     let rec = world.hit(r, 0.001, infinity);
     match rec {
         Some(x) => {
             let emitted = x.mat_ptr.emitted(*r, x.clone(), x.u, x.v, x.p);
-            match x.mat_ptr.scatter(r, x.clone(), &mut pdf_val) {
+            match x.mat_ptr.scatter(r, x.clone()) {
                 Some(y) => {
-                    // let on_light = Vect3::new(
-                    //     random_double_rng(213.0, 343.0),
-                    //     554.0,
-                    //     random_double_rng(227.0, 332.0),
-                    // );
-                    // let mut to_light = on_light - x.p;
-                    // let distance_squred = to_light.squared_length();
-                    // to_light = unit_vector(to_light);
-                    // if dot(to_light, x.normal) < 0.0 {
-                    //     return emitted;
-                    // }
-                    // let light_area = (343.0 - 213.0) * (332.0 - 227.0);
-                    // let light_cosine = to_light.y().abs();
-                    // if light_cosine < 0.000001 {
-                    //     return emitted;
-                    // }
-                    // pdf_val = distance_squred / (light_cosine * light_area);
-                    // let scattered = Ray::new(x.p, to_light, r.time());
-                    // let p = CosinePdf::new(x.normal);
-                    // let light_pdf = HittablePdf::new(lights.clone(), x.p);
-                    let p0 = Arc::new(HittablePdf::new(lights.clone(), x.p));
-                    let p1 = Arc::new(CosinePdf::new(x.normal));
-                    let mixef_pdf = MixturePdf::new(p0, p1);
-                    let scattered = Ray::new(x.p, mixef_pdf.generate(), r.time());
-                    pdf_val = mixef_pdf.value(scattered.direction());
+                    if y.is_specular {
+                        return y.attenuation
+                            * ray_color(&y.specular_ray, background, world, lights, depth - 1);
+                    }
+                    let light_ptr = Arc::new(HittablePdf::new(lights.clone(), x.p));
+                    let p = MixturePdf::new(light_ptr, y.pdf_ptr);
+                    let scattered = Ray::new(x.p, p.generate(), r.time());
+                    _pdf_val = p.value(scattered.direction());
                     emitted
-                        + y.first
+                        + y.attenuation
                             * x.mat_ptr.scattering_pdf(r, x.clone(), &scattered)
                             * ray_color(&scattered, background, world, lights, depth - 1)
-                            / pdf_val
+                            / _pdf_val
                 }
                 None => emitted,
             }
@@ -203,7 +181,7 @@ fn ray_color(
     }
 }
 fn main() {
-    let path = std::path::Path::new("output/book3/image8.jpg");
+    let path = std::path::Path::new("output/book3/image9.jpg");
     let prefix = path.parent().unwrap();
     std::fs::create_dir_all(prefix).expect("Cannot create all parent directories");
 
@@ -227,14 +205,30 @@ fn main() {
         origin - horizontal / 2.0 - vertical / 2.0 - Vect3::new(0.0, 0.0, focal_length);
 
     let world = cornell_box();
-    let lights: Arc<dyn Hittable> = Arc::new(XzRect::new(
+    // let lights: Arc<dyn Hittable> = Arc::new(XzRect::new(
+    //     213.0,
+    //     343.0,
+    //     227.0,
+    //     332.0,
+    //     554.0,
+    //     Arc::new(DEFAULT_MATERIAL),
+    // ));
+    let mut lights_base = HitableList::new();
+    lights_base.add(Arc::new(XzRect::new(
         213.0,
         343.0,
         227.0,
         332.0,
         554.0,
         Arc::new(DEFAULT_MATERIAL),
-    ));
+    )));
+    // lights_base.add(Arc::new(Sphere::new(
+    //     Vect3::new(190.0, 90.0, 190.0),
+    //     90.0,
+    //     Arc::new(DEFAULT_MATERIAL),
+    // )));
+    let lights: Arc<dyn Hittable> = Arc::new(lights_base);
+
     let lookfrom = Vect3::new(278.0, 278.0, -800.0);
     let lookat = Vect3::new(278.0, 278.0, 0.0);
     let vfov = 40.0;
