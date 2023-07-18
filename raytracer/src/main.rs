@@ -147,7 +147,13 @@ fn cornell_box() -> HitableList {
     objects
 }
 
-fn ray_color(r: &Ray, background: Vect3, world: &dyn Hittable, depth: i64) -> Vect3 {
+fn ray_color(
+    r: &Ray,
+    background: Vect3,
+    world: &dyn Hittable,
+    lights: &Arc<dyn Hittable>,
+    depth: i64,
+) -> Vect3 {
     if depth <= 0 {
         return Vect3::new(0.0, 0.0, 0.0);
     }
@@ -177,13 +183,14 @@ fn ray_color(r: &Ray, background: Vect3, world: &dyn Hittable, depth: i64) -> Ve
                     // }
                     // pdf_val = distance_squred / (light_cosine * light_area);
                     // let scattered = Ray::new(x.p, to_light, r.time());
-                    let p = CosinePdf::new(x.normal);
-                    let scattered = Ray::new(x.p, p.generate(), r.time());
-                    pdf_val = p.value(scattered.direction());
+                    // let p = CosinePdf::new(x.normal);
+                    let light_pdf = HittablePdf::new(lights.clone(), x.p);
+                    let scattered = Ray::new(x.p, light_pdf.generate(), r.time());
+                    pdf_val = light_pdf.value(scattered.direction());
                     emitted
                         + y.first
                             * x.mat_ptr.scattering_pdf(r, x.clone(), &scattered)
-                            * ray_color(&scattered, background, world, depth - 1)
+                            * ray_color(&scattered, background, world, lights, depth - 1)
                             / pdf_val
                 }
                 None => emitted,
@@ -193,7 +200,7 @@ fn ray_color(r: &Ray, background: Vect3, world: &dyn Hittable, depth: i64) -> Ve
     }
 }
 fn main() {
-    let path = std::path::Path::new("output/book3/image6.jpg");
+    let path = std::path::Path::new("output/book3/image7.jpg");
     let prefix = path.parent().unwrap();
     std::fs::create_dir_all(prefix).expect("Cannot create all parent directories");
 
@@ -217,6 +224,14 @@ fn main() {
         origin - horizontal / 2.0 - vertical / 2.0 - Vect3::new(0.0, 0.0, focal_length);
 
     let world = cornell_box();
+    let lights: Arc<dyn Hittable> = Arc::new(XzRect::new(
+        213.0,
+        343.0,
+        227.0,
+        332.0,
+        554.0,
+        Arc::new(DEFAULT_MATERIAL),
+    ));
     let lookfrom = Vect3::new(278.0, 278.0, -800.0);
     let lookat = Vect3::new(278.0, 278.0, 0.0);
     let vfov = 40.0;
@@ -256,6 +271,7 @@ fn main() {
         let _world = world.clone();
         let _cam = cam.clone();
         let _pixel_pos = pixel_pos.clone();
+        let _lights = lights.clone();
         let pb = multi_progress.add(ProgressBar::new((_pixel_pos.len() / width as usize) as u64));
         pb.set_prefix(format!("Process {}", k));
         let handle = thread::spawn(move || {
@@ -269,7 +285,7 @@ fn main() {
                     let v =
                         (((height - pixel.y - 1) as f64) + random_double()) / ((height - 1) as f64);
                     let r = _cam.get_ray(u, v);
-                    pixel_color += ray_color(&r, background, &_world, max_depth);
+                    pixel_color += ray_color(&r, background, &_world, &_lights, max_depth);
                     s += 1;
                 }
                 color_list.push((pixel, pixel_color));

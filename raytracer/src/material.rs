@@ -14,6 +14,11 @@ pub trait Material: Send + Sync {
     }
 }
 
+#[derive(Clone, Copy)]
+pub struct EmptyMaterial {}
+impl Material for EmptyMaterial {}
+pub const DEFAULT_MATERIAL: EmptyMaterial = EmptyMaterial {};
+
 pub struct Lambertian {
     pub albedo: Arc<dyn Texture>,
 }

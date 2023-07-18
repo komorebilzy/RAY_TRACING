@@ -1,3 +1,5 @@
+use std::f64::INFINITY;
+
 use crate::*;
 pub struct XyRect {
     pub mp: Arc<dyn Material>,
@@ -90,6 +92,25 @@ impl Hittable for XzRect {
         rec.v = (z - self.z0) / (self.z1 - self.z0);
         rec.set_face_normal(_r, outward_normal);
         Some(rec)
+    }
+    fn pdf_value(&self, _o: Vect3, _v: Vect3) -> f64 {
+        match self.hit(&Ray::new(_o, _v, 0.0), 0.0001, INFINITY) {
+            Some(x) => {
+                let area = (self.x1 - self.x0) * (self.z1 - self.z0);
+                let distance_squred = x.t * x.t * _v.squared_length();
+                let cosine = (dot(_v, x.normal) / _v.length()).abs();
+                distance_squred / (cosine * area)
+            }
+            None => 0.0,
+        }
+    }
+    fn random(&self, _o: Vect3) -> Vect3 {
+        let random_point = Vect3::new(
+            random_double_rng(self.x0, self.x1),
+            self.k,
+            random_double_rng(self.z0, self.z1),
+        );
+        random_point - _o
     }
 }
 
