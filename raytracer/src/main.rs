@@ -56,6 +56,9 @@ use color::*;
 mod onb;
 use onb::*;
 
+mod pdf;
+use pdf::*;
+
 use console::style;
 use image::{ImageBuffer, RgbImage};
 use indicatif::{MultiProgress, ProgressBar};
@@ -144,164 +147,44 @@ fn cornell_box() -> HitableList {
     objects
 }
 
-// fn final_scene() -> HitableList {
-//     let mut boxes1 = HitableList::new();
-//     let ground = Arc::new(Lambertian::new1(Vect3::new(0.48, 0.83, 0.53)));
-//     let boxes_per_side = 20;
-//     for i in 0..boxes_per_side {
-//         for j in 0..boxes_per_side {
-//             let w = 100.0;
-//             let x0 = -1000.0 + i as f64 * w;
-//             let z0 = -1000.0 + j as f64 * w;
-//             let y0 = 0.0;
-//             let x1 = x0 + w;
-//             let y1 = random_double_rng(1.0, 101.0);
-//             let z1 = z0 + w;
-//             boxes1.add(Arc::new(Box::new(
-//                 Vect3::new(x0, y0, z0),
-//                 Vect3::new(x1, y1, z1),
-//                 ground.clone(),
-//             )));
-//         }
-//     }
-//     let mut objects = HitableList::new();
-//     objects.add(Arc::new(BvhNode::new(boxes1, 0.0, 1.0)));
-
-//     // objects.add(Rc::new(BvhNode::new(boxes1, 0.0, 1.0)));
-//     let light: Arc<DiffuseLight> = Arc::new(DiffuseLight::new2(Vect3::new(7.0, 7.0, 7.0)));
-//     objects.add(Arc::new(XzRect::new(
-//         123.0, 423.0, 147.0, 412.0, 554.0, light,
-//     )));
-//     let center1 = Vect3::new(400.0, 400.0, 200.0);
-//     let center2 = center1 + Vect3::new(30.0, 0.0, 0.0);
-//     let moving_sphere_material = Arc::new(Lambertian::new1(Vect3::new(0.7, 0.3, 0.1)));
-//     objects.add(Arc::new(MovingSphere::new(
-//         center1,
-//         center2,
-//         0.0,
-//         1.0,
-//         50.0,
-//         moving_sphere_material,
-//     )));
-//     objects.add(Arc::new(Sphere::new(
-//         Vect3::new(260.0, 150.0, 45.0),
-//         50.0,
-//         Arc::new(Dielectric::new(1.5)),
-//     )));
-//     objects.add(Arc::new(Sphere::new(
-//         Vect3::new(0.0, 150.0, 145.0),
-//         50.0,
-//         Arc::new(Metal::new(Vect3::new(0.8, 0.8, 0.9), 1.0)),
-//     )));
-//     let mut boundary: Arc<dyn Hittable> = Arc::new(Sphere::new(
-//         Vect3::new(360.0, 150.0, 145.0),
-//         70.0,
-//         Arc::new(Dielectric::new(1.5)),
-//     ));
-//     objects.add(boundary.clone());
-//     objects.add(Arc::new(ConstantMedium::new2(
-//         boundary,
-//         0.2,
-//         Vect3::new(0.2, 0.4, 0.9),
-//     )));
-//     boundary = Arc::new(Sphere::new(
-//         Vect3::new(0.0, 0.0, 0.0),
-//         5000.0,
-//         Arc::new(Dielectric::new(1.5)),
-//     ));
-//     objects.add(Arc::new(ConstantMedium::new2(
-//         boundary,
-//         0.0001,
-//         Vect3::new(1.0, 1.0, 1.0),
-//     )));
-//     let emat = Arc::new(Lambertian::new2(Arc::new(ImageTexture::new(
-//         "input/earthmap.jpg",
-//     ))));
-//     objects.add(Arc::new(Sphere::new(
-//         Vect3::new(400.0, 200.0, 400.0),
-//         100.0,
-//         emat,
-//     )));
-//     let pertext = Arc::new(NoiseTexture::new2(0.1));
-//     objects.add(Arc::new(Sphere::new(
-//         Vect3::new(220.0, 280.0, 300.0),
-//         80.0,
-//         Arc::new(Lambertian::new2(pertext)),
-//     )));
-//     let mut boxes2 = HitableList::new();
-//     let white = Arc::new(Lambertian::new1(Vect3::new(0.73, 0.73, 0.73)));
-//     let ns = 1000;
-//     for _j in 0..ns {
-//         boxes2.add(Arc::new(Sphere::new(
-//             Vect3::random1(0.0, 165.0),
-//             10.0,
-//             white.clone(),
-//         )));
-//     }
-//     objects.add(Arc::new(Translate::new(
-//         Arc::new(RotateY::new(Arc::new(BvhNode::new(boxes2, 0.0, 1.0)), 15.0)),
-//         Vect3::new(-100.0, 270.0, 395.0),
-//     )));
-//     objects
-// }
-
-// fn ray_color(r: &Ray, background: Vect3, world: &dyn Hittable, depth: i64) -> Vect3 {
-//     if depth <= 0 {
-//         return Vect3::new(0.0, 0.0, 0.0);
-//     }
-//     let infinity = f64::INFINITY;
-//     let mut pdf = 0.0;
-//     let rec = world.hit(r, 0.001, infinity);
-//     match rec {
-//         Some(x) => match x.mat_ptr.scatter(r, x.clone(), &mut pdf) {
-//             Some(y) => {
-//                 x.mat_ptr.emitted(x.u, x.v, x.p)
-//                     + y.first
-//                         * x.mat_ptr.scattering_pdf(r, x.clone(), &y.second)
-//                         * ray_color(&y.second, background, world, depth - 1)
-//                         / pdf
-//             }
-//             None => x.mat_ptr.emitted(x.u, x.v, x.p),
-//         },
-//         None => background,
-//     }
-// }
-
 fn ray_color(r: &Ray, background: Vect3, world: &dyn Hittable, depth: i64) -> Vect3 {
     if depth <= 0 {
         return Vect3::new(0.0, 0.0, 0.0);
     }
     let infinity = f64::INFINITY;
-    let mut pdf = 0.0;
+    let mut pdf_val = 0.0;
     let rec = world.hit(r, 0.001, infinity);
     match rec {
         Some(x) => {
             let emitted = x.mat_ptr.emitted(*r, x.clone(), x.u, x.v, x.p);
-            match x.mat_ptr.scatter(r, x.clone(), &mut pdf) {
+            match x.mat_ptr.scatter(r, x.clone(), &mut pdf_val) {
                 Some(y) => {
-                    let on_light = Vect3::new(
-                        random_double_rng(213.0, 343.0),
-                        554.0,
-                        random_double_rng(227.0, 332.0),
-                    );
-                    let mut to_light = on_light - x.p;
-                    let distance_squred = to_light.squared_length();
-                    to_light = unit_vector(to_light);
-                    if dot(to_light, x.normal) < 0.0 {
-                        return emitted;
-                    }
-                    let light_area = (343.0 - 213.0) * (332.0 - 227.0);
-                    let light_cosine = to_light.y().abs();
-                    if light_cosine < 0.000001 {
-                        return emitted;
-                    }
-                    let pdf = distance_squred / (light_cosine * light_area);
-                    let scattered = Ray::new(x.p, to_light, r.time());
+                    // let on_light = Vect3::new(
+                    //     random_double_rng(213.0, 343.0),
+                    //     554.0,
+                    //     random_double_rng(227.0, 332.0),
+                    // );
+                    // let mut to_light = on_light - x.p;
+                    // let distance_squred = to_light.squared_length();
+                    // to_light = unit_vector(to_light);
+                    // if dot(to_light, x.normal) < 0.0 {
+                    //     return emitted;
+                    // }
+                    // let light_area = (343.0 - 213.0) * (332.0 - 227.0);
+                    // let light_cosine = to_light.y().abs();
+                    // if light_cosine < 0.000001 {
+                    //     return emitted;
+                    // }
+                    // pdf_val = distance_squred / (light_cosine * light_area);
+                    // let scattered = Ray::new(x.p, to_light, r.time());
+                    let p = CosinePdf::new(x.normal);
+                    let scattered = Ray::new(x.p, p.generate(), r.time());
+                    pdf_val = p.value(scattered.direction());
                     emitted
                         + y.first
                             * x.mat_ptr.scattering_pdf(r, x.clone(), &scattered)
                             * ray_color(&scattered, background, world, depth - 1)
-                            / pdf
+                            / pdf_val
                 }
                 None => emitted,
             }
@@ -310,8 +193,7 @@ fn ray_color(r: &Ray, background: Vect3, world: &dyn Hittable, depth: i64) -> Ve
     }
 }
 fn main() {
-    // let path = "output/book3/image4.jpg";
-    let path = std::path::Path::new("output/book3/image5.jpg");
+    let path = std::path::Path::new("output/book3/image6.jpg");
     let prefix = path.parent().unwrap();
     std::fs::create_dir_all(prefix).expect("Cannot create all parent directories");
 
