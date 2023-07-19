@@ -181,7 +181,7 @@ fn ray_color(
     }
 }
 fn main() {
-    let path = std::path::Path::new("output/book3/image10.jpg");
+    let path = std::path::Path::new("output/book3/image11.jpg");
     let prefix = path.parent().unwrap();
     std::fs::create_dir_all(prefix).expect("Cannot create all parent directories");
 
@@ -189,7 +189,7 @@ fn main() {
     let width = 600;
     let height = ((width as f64) / aspect_ratio) as u32;
     let quality = 100;
-    let samples_per_pixel = 100;
+    let samples_per_pixel = 1000;
     let max_depth = 50;
     let mut img: RgbImage = ImageBuffer::new(width, height);
 
@@ -205,26 +205,26 @@ fn main() {
         origin - horizontal / 2.0 - vertical / 2.0 - Vect3::new(0.0, 0.0, focal_length);
 
     let world = cornell_box();
-    let lights: Arc<dyn Hittable> = Arc::new(Sphere::new(
-        Vect3::new(190.0, 90.0, 190.0),
-        90.0,
-        Arc::new(DEFAULT_MATERIAL),
-    ));
-    // let mut lights_base = HitableList::new();
-    // lights_base.add(Arc::new(XzRect::new(
-    //     213.0,
-    //     343.0,
-    //     227.0,
-    //     332.0,
-    //     554.0,
-    //     Arc::new(DEFAULT_MATERIAL),
-    // )));
-    // lights_base.add(Arc::new(Sphere::new(
+    // let lights: Arc<dyn Hittable> = Arc::new(Sphere::new(
     //     Vect3::new(190.0, 90.0, 190.0),
     //     90.0,
     //     Arc::new(DEFAULT_MATERIAL),
-    // )));
-    // let lights: Arc<dyn Hittable> = Arc::new(lights_base);
+    // ));
+    let mut lights_base = HitableList::new();
+    lights_base.add(Arc::new(XzRect::new(
+        213.0,
+        343.0,
+        227.0,
+        332.0,
+        554.0,
+        Arc::new(DEFAULT_MATERIAL),
+    )));
+    lights_base.add(Arc::new(Sphere::new(
+        Vect3::new(190.0, 90.0, 190.0),
+        90.0,
+        Arc::new(DEFAULT_MATERIAL),
+    )));
+    let lights: Arc<dyn Hittable> = Arc::new(lights_base);
 
     let lookfrom = Vect3::new(278.0, 278.0, -800.0);
     let lookat = Vect3::new(278.0, 278.0, 0.0);
