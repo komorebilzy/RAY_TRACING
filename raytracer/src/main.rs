@@ -12,7 +12,7 @@ mod ray;
 use ray::*;
 
 mod sphere;
-// use sphere::*;
+use sphere::*;
 
 mod rtweekend;
 use rtweekend::*;
@@ -115,30 +115,30 @@ fn cornell_box() -> HitableList {
     //     Vect3::new(430.0, 330.0, 460.0),
     //     white.clone(),
     // )));
-    let aluminum: Arc<dyn Material> = Arc::new(Metal::new(Vect3::new(0.8, 0.85, 0.88), 0.0));
+    // let aluminum: Arc<dyn Material> = Arc::new(Metal::new(Vect3::new(0.8, 0.85, 0.88), 0.0));
     let mut box1: Arc<dyn Hittable> = Arc::new(Box::new(
         Vect3::new(0.0, 0.0, 0.0),
         Vect3::new(165.0, 330.0, 165.0),
-        aluminum,
+        white,
     ));
     box1 = Arc::new(RotateY::new(box1, 15.0));
     box1 = Arc::new(Translate::new(box1, Vect3::new(265.0, 0.0, 295.0)));
     objects.add(box1.clone());
 
-    // let glass = Arc::new(Dielectric::new(1.5));
-    // objects.add(Arc::new(Sphere::new(
-    //     Vect3::new(190.0, 90.0, 190.0),
-    //     90.0,
-    //     glass,
-    // )));
-    let mut box2: Arc<dyn Hittable> = Arc::new(Box::new(
-        Vect3::new(0.0, 0.0, 0.0),
-        Vect3::new(165.0, 165.0, 165.0),
-        white,
-    ));
-    box2 = Arc::new(RotateY::new(box2, -18.0));
-    box2 = Arc::new(Translate::new(box2, Vect3::new(130.0, 0.0, 65.0)));
-    objects.add(box2.clone());
+    let glass = Arc::new(Dielectric::new(1.5));
+    objects.add(Arc::new(Sphere::new(
+        Vect3::new(190.0, 90.0, 190.0),
+        90.0,
+        glass,
+    )));
+    // let mut box2: Arc<dyn Hittable> = Arc::new(Box::new(
+    //     Vect3::new(0.0, 0.0, 0.0),
+    //     Vect3::new(165.0, 165.0, 165.0),
+    //     white,
+    // ));
+    // box2 = Arc::new(RotateY::new(box2, -18.0));
+    // box2 = Arc::new(Translate::new(box2, Vect3::new(130.0, 0.0, 65.0)));
+    // objects.add(box2.clone());
     objects
 }
 
@@ -181,7 +181,7 @@ fn ray_color(
     }
 }
 fn main() {
-    let path = std::path::Path::new("output/book3/image9.jpg");
+    let path = std::path::Path::new("output/book3/image10.jpg");
     let prefix = path.parent().unwrap();
     std::fs::create_dir_all(prefix).expect("Cannot create all parent directories");
 
@@ -189,7 +189,7 @@ fn main() {
     let width = 600;
     let height = ((width as f64) / aspect_ratio) as u32;
     let quality = 100;
-    let samples_per_pixel = 1000;
+    let samples_per_pixel = 100;
     let max_depth = 50;
     let mut img: RgbImage = ImageBuffer::new(width, height);
 
@@ -205,29 +205,26 @@ fn main() {
         origin - horizontal / 2.0 - vertical / 2.0 - Vect3::new(0.0, 0.0, focal_length);
 
     let world = cornell_box();
-    // let lights: Arc<dyn Hittable> = Arc::new(XzRect::new(
+    let lights: Arc<dyn Hittable> = Arc::new(Sphere::new(
+        Vect3::new(190.0, 90.0, 190.0),
+        90.0,
+        Arc::new(DEFAULT_MATERIAL),
+    ));
+    // let mut lights_base = HitableList::new();
+    // lights_base.add(Arc::new(XzRect::new(
     //     213.0,
     //     343.0,
     //     227.0,
     //     332.0,
     //     554.0,
     //     Arc::new(DEFAULT_MATERIAL),
-    // ));
-    let mut lights_base = HitableList::new();
-    lights_base.add(Arc::new(XzRect::new(
-        213.0,
-        343.0,
-        227.0,
-        332.0,
-        554.0,
-        Arc::new(DEFAULT_MATERIAL),
-    )));
+    // )));
     // lights_base.add(Arc::new(Sphere::new(
     //     Vect3::new(190.0, 90.0, 190.0),
     //     90.0,
     //     Arc::new(DEFAULT_MATERIAL),
     // )));
-    let lights: Arc<dyn Hittable> = Arc::new(lights_base);
+    // let lights: Arc<dyn Hittable> = Arc::new(lights_base);
 
     let lookfrom = Vect3::new(278.0, 278.0, -800.0);
     let lookat = Vect3::new(278.0, 278.0, 0.0);

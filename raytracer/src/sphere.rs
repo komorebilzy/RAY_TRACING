@@ -1,3 +1,5 @@
+use std::f64::{consts::PI, INFINITY};
+
 use crate::*;
 #[derive(Clone)]
 pub struct Sphere {
@@ -6,13 +8,13 @@ pub struct Sphere {
     pub mat_ptr: Arc<dyn Material>,
 }
 impl Sphere {
-    // pub fn new(cen: Vect3, r: f64, m: Arc<dyn Material>) -> Self {
-    //     Self {
-    //         center: (cen),
-    //         radius: (r),
-    //         mat_ptr: (m),
-    //     }
-    // }
+    pub fn new(cen: Vect3, r: f64, m: Arc<dyn Material>) -> Self {
+        Self {
+            center: (cen),
+            radius: (r),
+            mat_ptr: (m),
+        }
+    }
     pub fn get_sphere_uv(p: Vect3) -> (f64, f64) {
         let theta = (-p.y()).acos();
         let phi = (-p.z()).atan2(p.x()) + std::f64::consts::PI;
@@ -55,5 +57,23 @@ impl Hittable for Sphere {
             maximum: (self.center + Vect3::new(self.radius, self.radius, self.radius)),
         };
         Some(output_box)
+    }
+    fn pdf_value(&self, o: Vect3, v: Vect3) -> f64 {
+        match self.hit(&Ray::new(o, v, 0.0), 0.001, INFINITY) {
+            Some(_x) => {
+                let cos_theta_max =
+                    (1.0 - self.radius * self.radius / (self.center - o).squared_length()).sqrt();
+                let solid_angle = 2.0 * PI * (1.0 - cos_theta_max);
+                1.0 / solid_angle
+            }
+            None => 0.0,
+        }
+    }
+    fn random(&self, o: Vect3) -> Vect3 {
+        let direction = self.center - o;
+        let distance_squared = direction.squared_length();
+        let mut uvw = Onb::default();
+        uvw.build_from_w(direction);
+        uvw.local2(random_to_sphere(self.radius, distance_squared))
     }
 }
