@@ -13,11 +13,24 @@ impl Position {
 }
 
 pub fn write_color(img: &mut RgbImage, pos: Position, pixel_color: Vect3, samples_per_pixel: i32) {
+    let mut r = pixel_color[0];
+    let mut g = pixel_color[1];
+    let mut b = pixel_color[2];
+    if r.is_nan() {
+        r = 0.0;
+    }
+    if g.is_nan() {
+        g = 0.0;
+    }
+    if b.is_nan() {
+        b = 0.0;
+    }
+
     let pixel = img.get_pixel_mut(pos.x, pos.y);
     let scale: f64 = 1.0 / (samples_per_pixel as f64);
-    let r: f64 = (scale * pixel_color[0]).sqrt();
-    let g: f64 = (scale * pixel_color[1]).sqrt();
-    let b: f64 = (scale * pixel_color[2]).sqrt();
+    r = (scale * r).sqrt();
+    g = (scale * g).sqrt();
+    b = (scale * b).sqrt();
     *pixel = image::Rgb([
         ((256_f64) * clamp(r, 0.0, 0.999)) as u8,
         ((256_f64) * clamp(g, 0.0, 0.999)) as u8,
