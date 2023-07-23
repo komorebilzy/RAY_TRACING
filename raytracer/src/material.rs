@@ -35,9 +35,9 @@ impl Lambertian {
             albedo: (Arc::new(SolidColor::new1(a))),
         }
     }
-    // pub fn new2(a: Arc<dyn Texture>) -> Self {
-    //     Self { albedo: (a) }
-    // }
+    pub fn new2(a: Arc<dyn Texture>) -> Self {
+        Self { albedo: (a) }
+    }
 }
 impl Material for Lambertian {
     fn scatter(&self, _r_in: &Ray, rec: HitRecord) -> Option<ScatterRecord> {
@@ -65,12 +65,12 @@ pub struct Metal {
 }
 
 impl Metal {
-    // pub fn new(a: Vect3, f: f64) -> Self {
-    //     Self {
-    //         albedo: (a),
-    //         fuzz: (if f < 1.0 { f } else { 1.0 }),
-    //     }
-    // }
+    pub fn new(a: Vect3, f: f64) -> Self {
+        Self {
+            albedo: (a),
+            fuzz: (if f < 1.0 { f } else { 1.0 }),
+        }
+    }
 }
 
 impl Material for Metal {
@@ -175,11 +175,11 @@ pub struct Isotropic {
     pub albedo: Arc<dyn Texture>,
 }
 impl Isotropic {
-    // pub fn new1(c: Vect3) -> Self {
-    //     Self {
-    //         albedo: (Arc::new(SolidColor::new1(c))),
-    //     }
-    // }
+    pub fn new1(c: Vect3) -> Self {
+        Self {
+            albedo: (Arc::new(SolidColor::new1(c))),
+        }
+    }
     // pub fn new2(a: Arc<dyn Texture>) -> Self {
     //     Self { albedo: (a) }
     // }

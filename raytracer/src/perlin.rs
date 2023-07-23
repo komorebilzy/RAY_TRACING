@@ -2,7 +2,6 @@ use crate::*;
 // use rand::prelude::SliceRandom;
 pub struct Perlin {
     pub point_count: i64,
-    // pub ranfloat: Vec<f64>,
     ranvec: Vec<Vect3>,
     pub perm_x: Vec<i64>,
     pub perm_y: Vec<i64>,
@@ -65,36 +64,36 @@ impl Perlin {
         Perlin::trilinear_interp(c, u, v, w)
     }
 
-    // pub fn permute(p: &mut [i64], n: i64) {
-    //     for i in (n - 1)..0 {
-    //         let target: usize = random_int(0, i) as usize;
-    //         p.swap(i as usize, target);
-    //     }
-    // }
+    pub fn permute(p: &mut [i64], n: i64) {
+        for i in (n - 1)..0 {
+            let target: usize = random_int(0, i) as usize;
+            p.swap(i as usize, target);
+        }
+    }
 
-    // pub fn perlin_generate_perm() -> Vec<i64> {
-    //     let mut p: Vec<i64> = Vec::new();
-    //     for i in 0..256 {
-    //         p.push(i as i64);
-    //     }
-    //     Perlin::permute(&mut p, 256);
-    //     // p.shuffle(&mut rand::thread_rng());
-    //     p
-    // }
+    pub fn perlin_generate_perm() -> Vec<i64> {
+        let mut p: Vec<i64> = Vec::new();
+        for i in 0..256 {
+            p.push(i as i64);
+        }
+        Perlin::permute(&mut p, 256);
+        // p.shuffle(&mut rand::thread_rng());
+        p
+    }
 
-    // pub fn new() -> Self {
-    //     let mut ran: Vec<Vect3> = Vec::new();
-    //     for _i in 0..256 {
-    //         ran.push(unit_vector(Vect3::random1(-1.0, 1.0)));
-    //     }
-    //     Self {
-    //         point_count: (256),
-    //         ranvec: (ran),
-    //         perm_x: Perlin::perlin_generate_perm(),
-    //         perm_y: Perlin::perlin_generate_perm(),
-    //         perm_z: Perlin::perlin_generate_perm(),
-    //     }
-    // }
+    pub fn new() -> Self {
+        let mut ran: Vec<Vect3> = Vec::new();
+        for _i in 0..256 {
+            ran.push(unit_vector(Vect3::random1(-1.0, 1.0)));
+        }
+        Self {
+            point_count: (256),
+            ranvec: (ran),
+            perm_x: Perlin::perlin_generate_perm(),
+            perm_y: Perlin::perlin_generate_perm(),
+            perm_z: Perlin::perlin_generate_perm(),
+        }
+    }
     pub fn turb(&self, p: Vect3, depth: i64) -> f64 {
         let mut accum = 0.0;
         let mut temp_p = p;

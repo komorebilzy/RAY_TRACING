@@ -12,13 +12,13 @@ impl ConstantMedium {
     //         neg_inv_density: (-1.0 / d),
     //     }
     // }
-    // pub fn new2(b: Arc<dyn Hittable>, d: f64, c: Vect3) -> Self {
-    //     Self {
-    //         boundary: (b),
-    //         phase_function: (Arc::new(Isotropic::new1(c))),
-    //         neg_inv_density: (-1.0 / d),
-    //     }
-    // }
+    pub fn new2(b: Arc<dyn Hittable>, d: f64, c: Vect3) -> Self {
+        Self {
+            boundary: (b),
+            phase_function: (Arc::new(Isotropic::new1(c))),
+            neg_inv_density: (-1.0 / d),
+        }
+    }
 }
 impl Hittable for ConstantMedium {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
