@@ -168,15 +168,15 @@ fn ray_color(
     }
 }
 fn main() {
-    let path = std::path::Path::new("output/book2/image_final3.jpg");
+    let path = std::path::Path::new("output/book2/image_final.jpg");
     let prefix = path.parent().unwrap();
     std::fs::create_dir_all(prefix).expect("Cannot create all parent directories");
 
     let aspect_ratio = 1.0;
-    let width = 60;
+    let width = 600;
     let height = ((width as f64) / aspect_ratio) as u32;
     let quality = 100;
-    let samples_per_pixel = 100;
+    let samples_per_pixel = 1000;
     let max_depth = 50;
     let mut img: RgbImage = ImageBuffer::new(width, height);
 
@@ -194,7 +194,7 @@ fn main() {
     let world = final_scene();
     let lights = XzRect::new(123.0, 423.0, 147.0, 412.0, 554.0, DEFAULT_MATERIAL);
 
-    let lookfrom = Vect3::new(278.0, 278.0, -800.0);
+    let lookfrom = Vect3::new(478.0, 278.0, -600.0);
     let lookat = Vect3::new(278.0, 278.0, 0.0);
     let vfov = 40.0;
     let aperture = 0.0;
@@ -212,7 +212,7 @@ fn main() {
         (0.0, 1.0),
     );
 
-    const THREAD_NUM: usize = 14;
+    const THREAD_NUM: usize = 10;
     let mut threads: Vec<JoinHandle<()>> = Vec::new();
     let mut recv: Vec<_> = Vec::new();
     let mut pixel_list: Vec<Vec<_>> = Vec::new();
