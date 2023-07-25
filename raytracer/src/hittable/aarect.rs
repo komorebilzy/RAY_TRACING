@@ -1,16 +1,17 @@
 use std::f64::INFINITY;
 
 use crate::*;
-pub struct XyRect {
-    pub mp: Arc<dyn Material>,
+#[derive(Clone, Copy)]
+pub struct XyRect<M: Material> {
+    pub mp: M,
     pub x0: f64,
     pub x1: f64,
     pub y0: f64,
     pub y1: f64,
     pub k: f64,
 }
-impl XyRect {
-    pub fn new(_x0: f64, _x1: f64, _y0: f64, _y1: f64, _k: f64, mat: Arc<dyn Material>) -> Self {
+impl<M: Material> XyRect<M> {
+    pub fn new(_x0: f64, _x1: f64, _y0: f64, _y1: f64, _k: f64, mat: M) -> Self {
         Self {
             mp: (mat),
             x0: (_x0),
@@ -21,7 +22,7 @@ impl XyRect {
         }
     }
 }
-impl Hittable for XyRect {
+impl<M: Material> Hittable for XyRect<M> {
     fn bounding_box(&self, _time0: f64, _time1: f64) -> Option<Aabb> {
         let output_box = Aabb::new(
             Vect3::new(self.x0, self.y0, self.k - 0.0001),
@@ -48,16 +49,17 @@ impl Hittable for XyRect {
     }
 }
 
-pub struct XzRect {
-    pub mp: Arc<dyn Material>,
+#[derive(Clone)]
+pub struct XzRect<M: Material> {
+    pub mp: M,
     pub x0: f64,
     pub x1: f64,
     pub z0: f64,
     pub z1: f64,
     pub k: f64,
 }
-impl XzRect {
-    pub fn new(_x0: f64, _x1: f64, _z0: f64, _z1: f64, _k: f64, mat: Arc<dyn Material>) -> Self {
+impl<M: Material> XzRect<M> {
+    pub fn new(_x0: f64, _x1: f64, _z0: f64, _z1: f64, _k: f64, mat: M) -> Self {
         Self {
             mp: (mat),
             x0: (_x0),
@@ -68,7 +70,7 @@ impl XzRect {
         }
     }
 }
-impl Hittable for XzRect {
+impl<M: Material> Hittable for XzRect<M> {
     fn bounding_box(&self, _time0: f64, _time1: f64) -> Option<Aabb> {
         let output_box = Aabb::new(
             Vect3::new(self.x0, self.k - 0.0001, self.z0),
@@ -114,8 +116,9 @@ impl Hittable for XzRect {
     }
 }
 
-pub struct YzRect {
-    pub mp: Arc<dyn Material>,
+#[derive(Clone)]
+pub struct YzRect<M: Material> {
+    pub mp: M,
     pub z0: f64,
     pub z1: f64,
     pub y0: f64,
@@ -123,8 +126,8 @@ pub struct YzRect {
     pub k: f64,
 }
 
-impl YzRect {
-    pub fn new(_y0: f64, _y1: f64, _z0: f64, _z1: f64, _k: f64, mat: Arc<dyn Material>) -> Self {
+impl<M: Material> YzRect<M> {
+    pub fn new(_y0: f64, _y1: f64, _z0: f64, _z1: f64, _k: f64, mat: M) -> Self {
         Self {
             mp: (mat),
             z0: (_z0),
@@ -135,7 +138,7 @@ impl YzRect {
         }
     }
 }
-impl Hittable for YzRect {
+impl<M: Material> Hittable for YzRect<M> {
     fn bounding_box(&self, _time0: f64, _time1: f64) -> Option<Aabb> {
         let output_box = Aabb::new(
             Vect3::new(self.k - 0.0001, self.y0, self.z0),

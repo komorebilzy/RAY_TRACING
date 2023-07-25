@@ -1,24 +1,26 @@
+pub mod onb;
+pub use onb::*;
 use std::f64::consts::PI;
 
 use crate::*;
-
 pub trait Pdf {
     fn value(&self, direction: Vect3) -> f64;
     fn generate(&self) -> Vect3;
 }
 
-#[derive(Clone, Copy)]
-pub struct EmptyPdf {}
-impl Pdf for EmptyPdf {
-    fn generate(&self) -> Vect3 {
-        Vect3::default()
-    }
-    fn value(&self, _direction: Vect3) -> f64 {
-        0.0
-    }
-}
-pub const DEFAULT_PDF: EmptyPdf = EmptyPdf {};
+// #[derive(Clone, Copy)]
+// pub struct EmptyPdf {}
+// impl Pdf for EmptyPdf {
+//     fn generate(&self) -> Vect3 {
+//         Vect3::default()
+//     }
+//     fn value(&self, _direction: Vect3) -> f64 {
+//         0.0
+//     }
+// }
+// pub const DEFAULT_PDF: EmptyPdf = EmptyPdf {};
 
+#[derive(Clone)]
 pub struct CosinePdf {
     uvw: Onb,
 }
@@ -44,12 +46,13 @@ impl Pdf for CosinePdf {
     }
 }
 
-pub struct HittablePdf {
+#[derive(Clone)]
+pub struct HittablePdf<'a, H: Hittable> {
     pub o: Vect3,
-    pub ptr: Arc<dyn Hittable>,
+    pub ptr: &'a H,
 }
-impl HittablePdf {
-    pub fn new(p: Arc<dyn Hittable>, origin: Vect3) -> Self {
+impl<'a, H: Hittable> HittablePdf<'a, H> {
+    pub fn new(p: &'a H, origin: Vect3) -> Self {
         Self {
             o: (origin),
             ptr: (p),
@@ -57,7 +60,7 @@ impl HittablePdf {
     }
 }
 
-impl Pdf for HittablePdf {
+impl<'a, H: Hittable> Pdf for HittablePdf<'a, H> {
     fn value(&self, direction: Vect3) -> f64 {
         self.ptr.pdf_value(self.o, direction)
     }
@@ -66,24 +69,26 @@ impl Pdf for HittablePdf {
     }
 }
 
-pub struct MixturePdf {
-    pub p: [Arc<dyn Pdf>; 2],
+#[derive(Clone)]
+pub struct MixturePdf<'a, P0: Pdf, P1: Pdf> {
+    pub p0: &'a P0,
+    pub p1: &'a P1,
 }
-impl MixturePdf {
-    pub fn new(p0: Arc<dyn Pdf>, p1: Arc<dyn Pdf>) -> Self {
-        Self { p: [p0, p1] }
+impl<'a, P0: Pdf, P1: Pdf> MixturePdf<'a, P0, P1> {
+    pub fn new(p0: &'a P0, p1: &'a P1) -> Self {
+        Self { p0, p1 }
     }
 }
-impl Pdf for MixturePdf {
+impl<'a, P0: Pdf, P1: Pdf> Pdf for MixturePdf<'a, P0, P1> {
     fn generate(&self) -> Vect3 {
         if random_double() < 0.5 {
-            self.p[0].generate()
+            self.p0.generate()
         } else {
-            self.p[1].generate()
+            self.p1.generate()
         }
     }
     fn value(&self, direction: Vect3) -> f64 {
-        0.5 * self.p[0].value(direction) + 0.5 * self.p[1].value(direction)
+        0.5 * self.p0.value(direction) + 0.5 * self.p1.value(direction)
     }
 }
 

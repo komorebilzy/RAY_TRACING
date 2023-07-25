@@ -1,33 +1,17 @@
-mod hittablelist;
-use hittablelist::*;
-
 mod hittable;
 use hittable::*;
 
-mod vect3;
-use rand::Rng;
-use vect3::*;
+mod utility;
+use utility::*;
 
-mod ray;
-use ray::*;
-
-mod sphere;
-use sphere::*;
-
-mod rtweekend;
-use rtweekend::*;
+mod pdf;
+use pdf::*;
 
 mod camear;
 use camear::*;
 
 mod material;
 use material::*;
-
-mod pair;
-// use pair::*;
-
-mod moving_sphere;
-use moving_sphere::*;
 
 mod aabb;
 use aabb::*;
@@ -41,35 +25,21 @@ use texture::*;
 mod perlin;
 use perlin::*;
 
-mod aarect;
-use aarect::*;
-
-mod bbox;
-use bbox::*;
-
-mod constant_medium;
-use constant_medium::*;
-
 mod color;
 use color::*;
-
-mod onb;
-use onb::*;
-
-mod pdf;
-use pdf::*;
 
 use console::style;
 use image::{ImageBuffer, RgbImage};
 use indicatif::{MultiProgress, ProgressBar};
+use rand::Rng;
 use std::sync::{mpsc, Arc};
 use std::thread;
 use std::thread::JoinHandle;
 use std::{fs::File, process::exit};
 
-fn cornell_box() -> HitableList {
+fn final_scene() -> HitableList {
     let mut boxes1 = HitableList::new();
-    let ground = Arc::new(Lambertian::new1(Vect3::new(0.48, 0.83, 0.53)));
+    let ground = Lambertian::new1(Vect3::new(0.48, 0.83, 0.53));
     let boxes_per_side = 20;
     for i in 0..boxes_per_side {
         for j in 0..boxes_per_side {
@@ -80,7 +50,7 @@ fn cornell_box() -> HitableList {
             let x1 = x0 + w;
             let y1 = random_double_rng(1.0, 101.0);
             let z1 = z0 + w;
-            boxes1.add(Arc::new(Box::new(
+            boxes1.add(Box::new(MyBox::new(
                 Vect3::new(x0, y0, z0),
                 Vect3::new(x1, y1, z1),
                 ground.clone(),
@@ -88,17 +58,17 @@ fn cornell_box() -> HitableList {
         }
     }
     let mut objects = HitableList::new();
-    objects.add(Arc::new(BvhNode::new(boxes1, 0.0, 1.0)));
+    objects.add(Box::new(BvhNode::new(boxes1, 0.0, 1.0)));
 
     // objects.add(Rc::new(BvhNode::new(boxes1, 0.0, 1.0)));
-    let light: Arc<DiffuseLight> = Arc::new(DiffuseLight::new2(Vect3::new(7.0, 7.0, 7.0)));
-    objects.add(Arc::new(FlipFace::new(Arc::new(XzRect::new(
+    let light = DiffuseLight::new2(Vect3::new(7.0, 7.0, 7.0));
+    objects.add(Box::new(FlipFace::new(XzRect::new(
         123.0, 423.0, 147.0, 412.0, 554.0, light,
-    )))));
+    ))));
     let center1 = Vect3::new(400.0, 400.0, 200.0);
     let center2 = center1 + Vect3::new(30.0, 0.0, 0.0);
-    let moving_sphere_material = Arc::new(Lambertian::new1(Vect3::new(0.7, 0.3, 0.1)));
-    objects.add(Arc::new(MovingSphere::new(
+    let moving_sphere_material = Lambertian::new1(Vect3::new(0.7, 0.3, 0.1));
+    objects.add(Box::new(MovingSphere::new(
         center1,
         center2,
         0.0,
@@ -106,63 +76,53 @@ fn cornell_box() -> HitableList {
         50.0,
         moving_sphere_material,
     )));
-    objects.add(Arc::new(Sphere::new(
+    objects.add(Box::new(Sphere::new(
         Vect3::new(260.0, 150.0, 45.0),
         50.0,
-        Arc::new(Dielectric::new(1.5)),
+        Dielectric::new(01.5),
     )));
-    objects.add(Arc::new(Sphere::new(
+    objects.add(Box::new(Sphere::new(
         Vect3::new(0.0, 150.0, 145.0),
         50.0,
-        Arc::new(Metal::new(Vect3::new(0.8, 0.8, 0.9), 1.0)),
+        Metal::new(Vect3::new(0.8, 0.8, 0.9), 1.0),
     )));
-    let mut boundary: Arc<dyn Hittable> = Arc::new(Sphere::new(
-        Vect3::new(360.0, 150.0, 145.0),
-        70.0,
-        Arc::new(Dielectric::new(1.5)),
-    ));
-    objects.add(boundary.clone());
-    objects.add(Arc::new(ConstantMedium::new2(
-        boundary,
+    let mut boundary = Sphere::new(Vect3::new(360.0, 150.0, 145.0), 70.0, Dielectric::new(1.5));
+    objects.add(Box::new(boundary.clone()));
+    objects.add(Box::new(ConstantMedium::new2(
+        boundary.clone(),
         0.2,
         Vect3::new(0.2, 0.4, 0.9),
     )));
-    boundary = Arc::new(Sphere::new(
-        Vect3::new(0.0, 0.0, 0.0),
-        5000.0,
-        Arc::new(Dielectric::new(1.5)),
-    ));
-    objects.add(Arc::new(ConstantMedium::new2(
+    boundary = Sphere::new(Vect3::new(0.0, 0.0, 0.0), 5000.0, Dielectric::new(1.5));
+    objects.add(Box::new(ConstantMedium::new2(
         boundary,
         0.0001,
         Vect3::new(1.0, 1.0, 1.0),
     )));
-    let emat = Arc::new(Lambertian::new2(Arc::new(ImageTexture::new(
-        "input/earthmap.jpg",
-    ))));
-    objects.add(Arc::new(Sphere::new(
+    let emat = Lambertian::new2(ImageTexture::new("input/earthmap.jpg"));
+    objects.add(Box::new(Sphere::new(
         Vect3::new(400.0, 200.0, 400.0),
         100.0,
         emat,
     )));
-    let pertext = Arc::new(NoiseTexture::new2(0.1));
-    objects.add(Arc::new(Sphere::new(
+    let pertext = NoiseTexture::new2(0.1);
+    objects.add(Box::new(Sphere::new(
         Vect3::new(220.0, 280.0, 300.0),
         80.0,
-        Arc::new(Lambertian::new2(pertext)),
+        Lambertian::new2(pertext),
     )));
     let mut boxes2 = HitableList::new();
-    let white = Arc::new(Lambertian::new1(Vect3::new(0.73, 0.73, 0.73)));
+    let white = Lambertian::new1(Vect3::new(0.73, 0.73, 0.73));
     let ns = 1000;
     for _j in 0..ns {
-        boxes2.add(Arc::new(Sphere::new(
+        boxes2.add(Box::new(Sphere::new(
             Vect3::random1(0.0, 165.0),
             10.0,
             white.clone(),
         )));
     }
-    objects.add(Arc::new(Translate::new(
-        Arc::new(RotateY::new(Arc::new(BvhNode::new(boxes2, 0.0, 1.0)), 15.0)),
+    objects.add(Box::new(Translate::new(
+        RotateY::new(BvhNode::new(boxes2, 0.0, 1.0), 15.0),
         Vect3::new(-100.0, 270.0, 395.0),
     )));
     objects
@@ -171,8 +131,8 @@ fn cornell_box() -> HitableList {
 fn ray_color(
     r: &Ray,
     background: Vect3,
-    world: &dyn Hittable,
-    lights: &Arc<dyn Hittable>,
+    world: &impl Hittable,
+    lights: &impl Hittable,
     depth: i64,
 ) -> Vect3 {
     if depth <= 0 {
@@ -183,20 +143,21 @@ fn ray_color(
     let rec = world.hit(r, 0.001, infinity);
     match rec {
         Some(x) => {
-            let emitted = x.mat_ptr.emitted(*r, x.clone(), x.u, x.v, x.p);
-            match x.mat_ptr.scatter(r, x.clone()) {
+            let emitted = x.mat_ptr.emitted(r, &x, x.u, x.v, x.p);
+            match x.mat_ptr.scatter(r, &x) {
                 Some(y) => {
                     if y.is_specular {
                         return y.attenuation
                             * ray_color(&y.specular_ray, background, world, lights, depth - 1);
                     }
-                    let light_ptr = Arc::new(HittablePdf::new(lights.clone(), x.p));
-                    let p = MixturePdf::new(light_ptr, y.pdf_ptr);
+                    let light_ptr = HittablePdf::new(lights, x.p);
+                    let tmp = y.pdf_ptr.unwrap();
+                    let p = MixturePdf::new(&light_ptr, tmp.as_ref());
                     let scattered = Ray::new(x.p, p.generate(), r.time());
                     _pdf_val = p.value(scattered.direction());
                     emitted
                         + y.attenuation
-                            * x.mat_ptr.scattering_pdf(r, x.clone(), &scattered)
+                            * x.mat_ptr.scattering_pdf(r, &x, &scattered)
                             * ray_color(&scattered, background, world, lights, depth - 1)
                             / _pdf_val
                 }
@@ -207,15 +168,15 @@ fn ray_color(
     }
 }
 fn main() {
-    let path = std::path::Path::new("output/book2/image_final1.jpg");
+    let path = std::path::Path::new("output/book2/image_final2.jpg");
     let prefix = path.parent().unwrap();
     std::fs::create_dir_all(prefix).expect("Cannot create all parent directories");
 
     let aspect_ratio = 1.0;
-    let width = 600;
+    let width = 60;
     let height = ((width as f64) / aspect_ratio) as u32;
     let quality = 100;
-    let samples_per_pixel = 1000;
+    let samples_per_pixel = 100;
     let max_depth = 50;
     let mut img: RgbImage = ImageBuffer::new(width, height);
 
@@ -230,15 +191,8 @@ fn main() {
     let _lower_left_corner =
         origin - horizontal / 2.0 - vertical / 2.0 - Vect3::new(0.0, 0.0, focal_length);
 
-    let world = cornell_box();
-    let lights: Arc<dyn Hittable> = Arc::new(XzRect::new(
-        123.0,
-        423.0,
-        147.0,
-        412.0,
-        554.0,
-        Arc::new(DEFAULT_MATERIAL),
-    ));
+    let world = final_scene();
+    let lights = XzRect::new(123.0, 423.0, 147.0, 412.0, 554.0, DEFAULT_MATERIAL);
 
     let lookfrom = Vect3::new(278.0, 278.0, -800.0);
     let lookat = Vect3::new(278.0, 278.0, 0.0);
@@ -273,6 +227,9 @@ fn main() {
         }
     }
     let multi_progress = MultiProgress::new();
+    let world = Arc::new(world);
+    let lights = Arc::new(lights);
+
     for (k, pixel_pos) in pixel_list.iter().enumerate().take(THREAD_NUM) {
         let (tx, rx) = mpsc::channel();
         recv.push(rx);
@@ -293,7 +250,8 @@ fn main() {
                     let v =
                         (((height - pixel.y - 1) as f64) + random_double()) / ((height - 1) as f64);
                     let r = _cam.get_ray(u, v);
-                    pixel_color += ray_color(&r, background, &_world, &_lights, max_depth);
+                    pixel_color +=
+                        ray_color(&r, background, _world.as_ref(), _lights.as_ref(), max_depth);
                     s += 1;
                 }
                 color_list.push((pixel, pixel_color));

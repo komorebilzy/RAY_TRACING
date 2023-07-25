@@ -5,18 +5,18 @@ pub struct ScatterRecord {
     pub specular_ray: Ray,
     pub is_specular: bool,
     pub attenuation: Vect3,
-    pub pdf_ptr: Arc<dyn Pdf>,
+    pub pdf_ptr: Option<Box<CosinePdf>>,
 }
 pub trait Material: Send + Sync {
-    fn scatter(&self, _r_in: &Ray, _rec: HitRecord) -> Option<ScatterRecord> {
+    fn scatter(&self, _r_in: &Ray, _rec: &HitRecord) -> Option<ScatterRecord> {
         None
     }
 
-    fn emitted(&self, _r_in: Ray, _rec: HitRecord, _u: f64, _v: f64, _p: Vect3) -> Vect3 {
+    fn emitted(&self, _r_in: &Ray, _rec: &HitRecord, _u: f64, _v: f64, _p: Vect3) -> Vect3 {
         Vect3::new(0.0, 0.0, 0.0)
     }
 
-    fn scattering_pdf(&self, _r_in: &Ray, _rec: HitRecord, _scattered: &Ray) -> f64 {
+    fn scattering_pdf(&self, _r_in: &Ray, _rec: &HitRecord, _scattered: &Ray) -> f64 {
         0.0
     }
 }
@@ -26,30 +26,34 @@ pub struct EmptyMaterial {}
 impl Material for EmptyMaterial {}
 pub const DEFAULT_MATERIAL: EmptyMaterial = EmptyMaterial {};
 
-pub struct Lambertian {
-    pub albedo: Arc<dyn Texture>,
+#[derive(Clone, Default)]
+pub struct Lambertian<T: Texture> {
+    pub albedo: T,
 }
-impl Lambertian {
+impl Lambertian<SolidColor> {
     pub fn new1(a: Vect3) -> Self {
         Self {
-            albedo: (Arc::new(SolidColor::new1(a))),
+            albedo: SolidColor::new1(a),
         }
     }
-    pub fn new2(a: Arc<dyn Texture>) -> Self {
+}
+impl<T: Texture> Lambertian<T> {
+    pub fn new2(a: T) -> Self {
         Self { albedo: (a) }
     }
 }
-impl Material for Lambertian {
-    fn scatter(&self, _r_in: &Ray, rec: HitRecord) -> Option<ScatterRecord> {
+
+impl<T: Texture> Material for Lambertian<T> {
+    fn scatter(&self, _r_in: &Ray, rec: &HitRecord) -> Option<ScatterRecord> {
         let ans = ScatterRecord {
             specular_ray: (*_r_in),
             is_specular: (false),
             attenuation: (self.albedo.value(rec.u, rec.v, rec.p)),
-            pdf_ptr: (Arc::new(CosinePdf::new(rec.normal))),
+            pdf_ptr: Some(Box::new(CosinePdf::new(rec.normal))),
         };
         Some(ans)
     }
-    fn scattering_pdf(&self, _r_in: &Ray, _rec: HitRecord, _scattered: &Ray) -> f64 {
+    fn scattering_pdf(&self, _r_in: &Ray, _rec: &HitRecord, _scattered: &Ray) -> f64 {
         let cosin = dot(_rec.normal, unit_vector(_scattered.direction()));
         if cosin < 0.0 {
             0.0
@@ -74,7 +78,7 @@ impl Metal {
 }
 
 impl Material for Metal {
-    fn scatter(&self, r_in: &Ray, rec: HitRecord) -> Option<ScatterRecord> {
+    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<ScatterRecord> {
         let reflected = reflect(unit_vector(r_in.direction()), rec.normal);
         let scattered = Ray::new(
             rec.p,
@@ -85,7 +89,7 @@ impl Material for Metal {
             specular_ray: scattered,
             attenuation: self.albedo,
             is_specular: true,
-            pdf_ptr: Arc::new(DEFAULT_PDF),
+            pdf_ptr: None,
         };
         Some(ans)
     }
@@ -99,6 +103,7 @@ pub fn fmin(a: f64, b: f64) -> f64 {
     }
 }
 
+#[derive(Clone)]
 pub struct Dielectric {
     pub ir: f64,
 }
@@ -115,7 +120,7 @@ impl Dielectric {
     }
 }
 impl Material for Dielectric {
-    fn scatter(&self, r_in: &Ray, rec: HitRecord) -> Option<ScatterRecord> {
+    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<ScatterRecord> {
         let refraction_ratio = if rec.front_face {
             1.0 / self.ir
         } else {
@@ -137,31 +142,34 @@ impl Material for Dielectric {
             specular_ray: (scattered),
             is_specular: (true),
             attenuation: (Vect3::new(1.0, 1.0, 1.0)),
-            pdf_ptr: (Arc::new(DEFAULT_PDF)),
+            pdf_ptr: None,
         };
         Some(ans)
     }
 }
 
-pub struct DiffuseLight {
-    pub emit: Arc<dyn Texture>,
+pub struct DiffuseLight<T: Texture> {
+    pub emit: T,
 }
 
-impl DiffuseLight {
-    // pub fn new1(a: Arc<Texture>) -> Self {
-    //     Self { emit: (a) }
-    // }
+// impl<T: Texture> DiffuseLight<T> {
+//     pub fn new1(a: T) -> Self {
+//         Self { emit: (a) }
+//     }
+// }
+impl DiffuseLight<SolidColor> {
     pub fn new2(c: Vect3) -> Self {
         Self {
-            emit: (Arc::new(SolidColor::new1(c))),
+            emit: SolidColor::new1(c),
         }
     }
 }
-impl Material for DiffuseLight {
-    fn scatter(&self, _r_in: &Ray, _rec: HitRecord) -> Option<ScatterRecord> {
+
+impl<T: Texture> Material for DiffuseLight<T> {
+    fn scatter(&self, _r_in: &Ray, _rec: &HitRecord) -> Option<ScatterRecord> {
         None
     }
-    fn emitted(&self, _r_in: Ray, _rec: HitRecord, _u: f64, _v: f64, _p: Vect3) -> Vect3 {
+    fn emitted(&self, _r_in: &Ray, _rec: &HitRecord, _u: f64, _v: f64, _p: Vect3) -> Vect3 {
         // self.emit.value(_u, _v, _p)
         if _rec.front_face {
             self.emit.value(_u, _v, _p)
@@ -171,26 +179,26 @@ impl Material for DiffuseLight {
     }
 }
 
-pub struct Isotropic {
-    pub albedo: Arc<dyn Texture>,
+pub struct Isotropic<T: Texture> {
+    pub albedo: T,
 }
-impl Isotropic {
+impl Isotropic<SolidColor> {
     pub fn new1(c: Vect3) -> Self {
         Self {
-            albedo: (Arc::new(SolidColor::new1(c))),
+            albedo: SolidColor::new1(c),
         }
     }
     // pub fn new2(a: Arc<dyn Texture>) -> Self {
     //     Self { albedo: (a) }
     // }
 }
-impl Material for Isotropic {
-    fn scatter(&self, r_in: &Ray, rec: HitRecord) -> Option<ScatterRecord> {
+impl<T: Texture> Material for Isotropic<T> {
+    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<ScatterRecord> {
         let ans = ScatterRecord {
             specular_ray: (Ray::new(rec.p, random_in_unit_sphere(), r_in.time())),
             is_specular: (true),
             attenuation: (self.albedo.value(rec.u, rec.v, rec.p)),
-            pdf_ptr: (Arc::new(DEFAULT_PDF)),
+            pdf_ptr: None,
         };
         Some(ans)
     }

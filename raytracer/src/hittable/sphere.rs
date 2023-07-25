@@ -1,14 +1,13 @@
-use std::f64::{consts::PI, INFINITY};
-
 use crate::*;
+use std::f64::{consts::PI, INFINITY};
 #[derive(Clone)]
-pub struct Sphere {
+pub struct Sphere<M: Material> {
     pub center: Vect3,
     pub radius: f64,
-    pub mat_ptr: Arc<dyn Material>,
+    pub mat_ptr: M,
 }
-impl Sphere {
-    pub fn new(cen: Vect3, r: f64, m: Arc<dyn Material>) -> Self {
+impl<M: Material> Sphere<M> {
+    pub fn new(cen: Vect3, r: f64, m: M) -> Self {
         Self {
             center: (cen),
             radius: (r),
@@ -24,7 +23,7 @@ impl Sphere {
         )
     }
 }
-impl Hittable for Sphere {
+impl<M: Material> Hittable for Sphere<M> {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let oc: Vect3 = r.origin() - self.center;
         let a: f64 = dot(r.direction(), r.direction());
@@ -48,7 +47,7 @@ impl Hittable for Sphere {
         let mut rec = HitRecord::new(t, p, &self.mat_ptr);
         let outward_normal: Vect3 = (p - self.center) / self.radius;
         rec.set_face_normal(r, outward_normal);
-        (rec.u, rec.v) = Sphere::get_sphere_uv(outward_normal);
+        (rec.u, rec.v) = Sphere::<M>::get_sphere_uv(outward_normal);
         Some(rec)
     }
     fn bounding_box(&self, _time0: f64, _time1: f64) -> Option<Aabb> {

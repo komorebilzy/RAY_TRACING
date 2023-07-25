@@ -1,4 +1,4 @@
-use crate::*;
+use crate::utility::*;
 #[derive(Clone)]
 pub struct Camera {
     origin: Vect3,

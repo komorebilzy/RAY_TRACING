@@ -1,26 +1,26 @@
 use crate::*;
-pub struct ConstantMedium {
-    pub boundary: Arc<dyn Hittable>,
-    pub phase_function: Arc<dyn Material>,
+pub struct ConstantMedium<H: Hittable, M: Material> {
+    pub boundary: H,
+    pub phase_function: M,
     pub neg_inv_density: f64,
 }
-impl ConstantMedium {
-    // pub fn new1(b: Arc<dyn Hittable>, d: f64, a: Arc<dyn Texture>) -> Self {
+impl<H: Hittable> ConstantMedium<H, Isotropic<SolidColor>> {
+    // pub fn new1(b: H, d: f64, a: T) -> Self {
     //     Self {
     //         boundary: (b),
-    //         phase_function: (Arc::new(Isotropic::new2(a))),
+    //         phase_function: (Isotropic::new2(a)),
     //         neg_inv_density: (-1.0 / d),
     //     }
     // }
-    pub fn new2(b: Arc<dyn Hittable>, d: f64, c: Vect3) -> Self {
+    pub fn new2(b: H, d: f64, c: Vect3) -> Self {
         Self {
             boundary: (b),
-            phase_function: (Arc::new(Isotropic::new1(c))),
+            phase_function: Isotropic::new1(c),
             neg_inv_density: (-1.0 / d),
         }
     }
 }
-impl Hittable for ConstantMedium {
+impl<H: Hittable, M: Material> Hittable for ConstantMedium<H, M> {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let enable_debug = false;
         let debugging = enable_debug && (random_double() < 0.00001);

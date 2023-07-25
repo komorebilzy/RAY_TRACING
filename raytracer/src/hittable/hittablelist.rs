@@ -1,8 +1,7 @@
 use crate::*;
 use std::option::Option;
-#[derive(Clone)]
 pub struct HitableList {
-    pub objects: Vec<Arc<dyn Hittable>>,
+    pub objects: Vec<Box<dyn Hittable>>,
 }
 impl HitableList {
     pub fn new() -> Self {
@@ -10,7 +9,7 @@ impl HitableList {
             objects: Vec::new(),
         }
     }
-    pub fn add(&mut self, object: Arc<dyn Hittable>) {
+    pub fn add(&mut self, object: Box<dyn Hittable>) {
         self.objects.push(object)
     }
 }
@@ -56,7 +55,7 @@ impl Hittable for HitableList {
     fn pdf_value(&self, o: Vect3, v: Vect3) -> f64 {
         let weight = 1.0 / self.objects.len() as f64;
         let mut sum = 0.0;
-        for object in self.objects.clone() {
+        for object in &self.objects {
             sum += weight * object.pdf_value(o, v);
         }
         sum

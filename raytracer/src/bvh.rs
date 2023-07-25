@@ -1,14 +1,14 @@
 // use image::flat::SampleLayout;
 
 use crate::*;
-#[derive(Clone)]
+// #[derive(Default)]
 pub struct BvhNode {
-    pub left: Arc<dyn Hittable>,
-    pub right: Arc<dyn Hittable>,
+    pub left: Option<Box<dyn Hittable>>,
+    pub right: Option<Box<dyn Hittable>>,
     pub boxx: Aabb,
 }
 
-pub fn box_compare(a: &Arc<dyn Hittable>, b: &Arc<dyn Hittable>, axis: i64) -> std::cmp::Ordering {
+pub fn box_compare(a: &dyn Hittable, b: &dyn Hittable, axis: i64) -> std::cmp::Ordering {
     match a.bounding_box(0.0, 0.0) {
         None => std::cmp::Ordering::Less,
         Some(x) => match b.bounding_box(0.0, 0.0) {
@@ -29,29 +29,29 @@ pub fn box_compare(a: &Arc<dyn Hittable>, b: &Arc<dyn Hittable>, axis: i64) -> s
     }
 }
 
-pub fn box_x_compare(a: &Arc<dyn Hittable>, b: &Arc<dyn Hittable>) -> std::cmp::Ordering {
+pub fn box_x_compare(a: &dyn Hittable, b: &dyn Hittable) -> std::cmp::Ordering {
     box_compare(a, b, 0)
 }
 
-pub fn box_y_compare(a: &Arc<dyn Hittable>, b: &Arc<dyn Hittable>) -> std::cmp::Ordering {
+pub fn box_y_compare(a: &dyn Hittable, b: &dyn Hittable) -> std::cmp::Ordering {
     box_compare(a, b, 1)
 }
 
-pub fn box_z_compare(a: &Arc<dyn Hittable>, b: &Arc<dyn Hittable>) -> std::cmp::Ordering {
+pub fn box_z_compare(a: &dyn Hittable, b: &dyn Hittable) -> std::cmp::Ordering {
     box_compare(a, b, 2)
 }
 
 impl BvhNode {
     pub fn prinew(
-        src_objects: &mut [Arc<dyn Hittable>],
+        src_objects: &mut Vec<Box<dyn Hittable>>,
         start: usize,
         end: usize,
         time0: f64,
         time1: f64,
     ) -> Self {
         let mut ans = BvhNode {
-            left: (src_objects[start].clone()),
-            right: (src_objects[start].clone()),
+            left: (None),
+            right: (None),
             boxx: (Aabb::default()),
         };
 
@@ -64,24 +64,51 @@ impl BvhNode {
             box_z_compare
         };
         let object_span = end - start;
-        if object_span == 2 {
-            if comparator(&src_objects[start].clone(), &src_objects[start + 1].clone())
+        if object_span == 1 {
+            ans.left = Some(src_objects.remove(start));
+            ans.right = None;
+        } else if object_span == 2 {
+            if comparator(src_objects[start].as_ref(), src_objects[start + 1].as_ref())
                 == std::cmp::Ordering::Less
             {
-                ans.left = src_objects[start].clone();
-                ans.right = src_objects[start + 1].clone();
+                ans.left = Some(src_objects.remove(start));
+                ans.right = Some(src_objects.remove(start + 1));
             } else {
-                ans.left = src_objects[start + 1].clone();
-                ans.right = src_objects[start].clone();
+                ans.left = Some(src_objects.remove(start + 1));
+                ans.right = Some(src_objects.remove(start));
             }
-        } else if object_span != 1 {
-            src_objects[start..end].sort_by(comparator);
+        } else {
+            src_objects[start..end].sort_by(|a, b| comparator(a.as_ref(), b.as_ref()));
+            // src_objects[start..end].sort_by(comparator);
             let mid = start + object_span / 2;
-            ans.left = Arc::new(BvhNode::prinew(src_objects, start, mid, time0, time1));
-            ans.right = Arc::new(BvhNode::prinew(src_objects, mid, end, time0, time1));
+            ans.left = Some(Box::new(BvhNode::prinew(
+                src_objects,
+                start,
+                mid,
+                time0,
+                time1,
+            )));
+            ans.right = Some(Box::new(BvhNode::prinew(
+                src_objects,
+                mid,
+                end,
+                time0,
+                time1,
+            )));
         }
-        let left = ans.left.bounding_box(time0, time1);
-        let right = ans.right.bounding_box(time0, time1);
+
+        let left = if ans.left.is_some() {
+            ans.left.as_ref().unwrap().bounding_box(time0, time1)
+        } else {
+            None
+        };
+
+        let right = if ans.right.is_some() {
+            ans.right.as_ref().unwrap().bounding_box(time0, time1)
+        } else {
+            None
+        };
+
         match left {
             Some(x) => match right {
                 Some(y) => {
@@ -98,14 +125,9 @@ impl BvhNode {
         ans
     }
 
-    pub fn new(list: HitableList, time0: f64, time1: f64) -> Self {
-        BvhNode::prinew(
-            &mut list.objects.clone(),
-            0_usize,
-            list.objects.len(),
-            time0,
-            time1,
-        )
+    pub fn new(mut list: HitableList, time0: f64, time1: f64) -> Self {
+        let len = list.objects.len();
+        BvhNode::prinew(&mut list.objects, 0_usize, len, time0, time1)
     }
 }
 
@@ -117,11 +139,11 @@ impl Hittable for BvhNode {
         if !self.boxx.hit(r, t_min, t_max) {
             return None;
         }
-        let hit_left = self.left.hit(r, t_min, t_max);
+        let hit_left = self.left.as_ref().unwrap().hit(r, t_min, t_max);
         match hit_left {
-            None => self.right.hit(r, t_min, t_max),
+            None => self.right.as_ref().unwrap().hit(r, t_min, t_max),
             Some(x) => {
-                let hit_right = self.right.hit(r, t_min, x.t);
+                let hit_right = self.right.as_ref().unwrap().hit(r, t_min, x.t);
                 match hit_right {
                     None => Some(x),
                     Some(y) => Some(y),

@@ -1,18 +1,17 @@
 use crate::*;
-use std::sync::Arc;
-pub struct Box {
+pub struct MyBox {
     pub box_min: Vect3,
     pub box_max: Vect3,
     pub sides: HitableList,
 }
-impl Box {
-    pub fn new(p0: Vect3, p1: Vect3, ptr: Arc<dyn Material>) -> Self {
-        let mut ans = Box {
+impl MyBox {
+    pub fn new<M: Material + Clone + 'static>(p0: Vect3, p1: Vect3, ptr: M) -> Self {
+        let mut ans = MyBox {
             box_min: (p0),
             box_max: (p1),
             sides: (HitableList::new()),
         };
-        ans.sides.add(Arc::new(XyRect::new(
+        ans.sides.add(Box::new(XyRect::new(
             p0.x(),
             p1.x(),
             p0.y(),
@@ -20,7 +19,7 @@ impl Box {
             p1.z(),
             ptr.clone(),
         )));
-        ans.sides.add(Arc::new(XyRect::new(
+        ans.sides.add(Box::new(XyRect::new(
             p0.x(),
             p1.x(),
             p0.y(),
@@ -28,7 +27,7 @@ impl Box {
             p0.z(),
             ptr.clone(),
         )));
-        ans.sides.add(Arc::new(XzRect::new(
+        ans.sides.add(Box::new(XzRect::new(
             p0.x(),
             p1.x(),
             p0.z(),
@@ -36,7 +35,7 @@ impl Box {
             p1.y(),
             ptr.clone(),
         )));
-        ans.sides.add(Arc::new(XzRect::new(
+        ans.sides.add(Box::new(XzRect::new(
             p0.x(),
             p1.x(),
             p0.z(),
@@ -44,7 +43,7 @@ impl Box {
             p0.y(),
             ptr.clone(),
         )));
-        ans.sides.add(Arc::new(YzRect::new(
+        ans.sides.add(Box::new(YzRect::new(
             p0.y(),
             p1.y(),
             p0.z(),
@@ -52,7 +51,7 @@ impl Box {
             p1.x(),
             ptr.clone(),
         )));
-        ans.sides.add(Arc::new(YzRect::new(
+        ans.sides.add(Box::new(YzRect::new(
             p0.y(),
             p1.y(),
             p0.z(),
@@ -63,7 +62,7 @@ impl Box {
         ans
     }
 }
-impl Hittable for Box {
+impl Hittable for MyBox {
     fn bounding_box(&self, _time0: f64, _time1: f64) -> Option<Aabb> {
         let output_box = Aabb::new(self.box_min, self.box_max);
         Some(output_box)

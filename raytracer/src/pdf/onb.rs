@@ -2,6 +2,7 @@ use std::ops;
 
 use crate::*;
 
+#[derive(Clone)]
 pub struct Onb {
     pub axis: [Vect3; 3],
 }

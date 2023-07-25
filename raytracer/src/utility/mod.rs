@@ -1,3 +1,9 @@
+pub mod ray;
+pub mod vect3;
+
+pub use ray::*;
+pub use vect3::*;
+
 use rand::Rng;
 
 pub fn random_double() -> f64 {

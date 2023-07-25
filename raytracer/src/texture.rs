@@ -5,6 +5,7 @@ pub trait Texture: Send + Sync {
     fn value(&self, u: f64, v: f64, p: Vect3) -> Vect3;
 }
 
+#[derive(Clone)]
 pub struct SolidColor {
     pub color_value: Vect3,
 }
@@ -25,26 +26,28 @@ impl Texture for SolidColor {
     }
 }
 
-pub struct CheckerTexture {
-    pub odd: Arc<dyn Texture>,
-    pub even: Arc<dyn Texture>,
+pub struct CheckerTexture<T1: Texture, T2: Texture> {
+    pub odd: T1,
+    pub even: T2,
 }
+// impl<T1: Texture, T2: Texture> CheckerTexture<T1, T2> {
+//     pub fn new1(_odd: T1, _even: T2) -> Self {
+//         Self {
+//             odd: (_odd),
+//             even: (_even),
+//         }
+//     }
+// }
 
-impl CheckerTexture {
-    // pub fn new1(_even: Arc<dyn Texture>, _odd: Arc<dyn Texture>) -> Self {
-    //     Self {
-    //         odd: (_odd),
-    //         even: (_even),
-    //     }
-    // }
-    // pub fn new2(c1: Vect3, c2: Vect3) -> Self {
-    //     Self {
-    //         odd: (Arc::new(SolidColor::new1(c2))),
-    //         even: (Arc::new(SolidColor::new1(c1))),
-    //     }
-    // }
-}
-impl Texture for CheckerTexture {
+// impl CheckerTexture<SolidColor, SolidColor> {
+//     pub fn new2(c1: Vect3, c2: Vect3) -> Self {
+//         Self {
+//             odd: (SolidColor::new1(c2)),
+//             even: (SolidColor::new1(c1)),
+//         }
+//     }
+// }
+impl<T1: Texture, T2: Texture> Texture for CheckerTexture<T1, T2> {
     fn value(&self, u: f64, v: f64, p: Vect3) -> Vect3 {
         let sines = (10.0 * p.x()).sin() * (10.0 * p.y()).sin() * (10.0 * p.z()).sin();
         if sines < 0.0 {

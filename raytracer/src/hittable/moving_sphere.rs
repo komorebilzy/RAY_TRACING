@@ -1,23 +1,16 @@
 use crate::*;
 
-pub struct MovingSphere {
+pub struct MovingSphere<M: Material> {
     pub center0: Vect3,
     pub center1: Vect3,
     pub time0: f64,
     pub time1: f64,
     pub radius: f64,
-    pub mat_ptr: Arc<dyn Material>,
+    pub mat_ptr: M,
 }
 
-impl MovingSphere {
-    pub fn new(
-        cen0: Vect3,
-        cen1: Vect3,
-        _time0: f64,
-        _time1: f64,
-        r: f64,
-        m: Arc<dyn Material>,
-    ) -> Self {
+impl<M: Material> MovingSphere<M> {
+    pub fn new(cen0: Vect3, cen1: Vect3, _time0: f64, _time1: f64, r: f64, m: M) -> Self {
         Self {
             center0: (cen0),
             center1: (cen1),
@@ -34,7 +27,7 @@ impl MovingSphere {
     }
 }
 
-impl Hittable for MovingSphere {
+impl<M: Material> Hittable for MovingSphere<M> {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let oc = r.origin() - self.center(r.time());
         let a = (r.direction()).squared_length();
