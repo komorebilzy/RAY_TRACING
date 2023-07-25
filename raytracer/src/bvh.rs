@@ -71,8 +71,8 @@ impl BvhNode {
             if comparator(src_objects[start].as_ref(), src_objects[start + 1].as_ref())
                 == std::cmp::Ordering::Less
             {
-                ans.left = Some(src_objects.remove(start));
                 ans.right = Some(src_objects.remove(start + 1));
+                ans.left = Some(src_objects.remove(start));
             } else {
                 ans.left = Some(src_objects.remove(start + 1));
                 ans.right = Some(src_objects.remove(start));
@@ -81,17 +81,17 @@ impl BvhNode {
             src_objects[start..end].sort_by(|a, b| comparator(a.as_ref(), b.as_ref()));
             // src_objects[start..end].sort_by(comparator);
             let mid = start + object_span / 2;
-            ans.left = Some(Box::new(BvhNode::prinew(
-                src_objects,
-                start,
-                mid,
-                time0,
-                time1,
-            )));
             ans.right = Some(Box::new(BvhNode::prinew(
                 src_objects,
                 mid,
                 end,
+                time0,
+                time1,
+            )));
+            ans.left = Some(Box::new(BvhNode::prinew(
+                src_objects,
+                start,
+                mid,
                 time0,
                 time1,
             )));
@@ -135,20 +135,38 @@ impl Hittable for BvhNode {
     fn bounding_box(&self, _time0: f64, _time1: f64) -> Option<Aabb> {
         Some(self.boxx.clone())
     }
+    // fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+    //     if !self.boxx.hit(r, t_min, t_max) {
+    //         return None;
+    //     }
+    //     let hit_left = self.left.as_ref().unwrap().hit(r, t_min, t_max);
+    //     match hit_left {
+    //         None => self.right.as_ref().unwrap().hit(r, t_min, t_max),
+    //         Some(x) => {
+    //             let hit_right = self.right.as_ref().unwrap().hit(r, t_min, x.t);
+    //             match hit_right {
+    //                 None => Some(x),
+    //                 Some(y) => Some(y),
+    //             }
+    //         }
+    //     }
+    // }
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         if !self.boxx.hit(r, t_min, t_max) {
             return None;
         }
-        let hit_left = self.left.as_ref().unwrap().hit(r, t_min, t_max);
-        match hit_left {
-            None => self.right.as_ref().unwrap().hit(r, t_min, t_max),
-            Some(x) => {
-                let hit_right = self.right.as_ref().unwrap().hit(r, t_min, x.t);
-                match hit_right {
-                    None => Some(x),
-                    Some(y) => Some(y),
-                }
-            }
+        let hit_left = match self.left.as_ref() {
+            Some(left) => left.hit(r, t_min, t_max),
+            None => None,
+        };
+        let hit_right = match self.right.as_ref() {
+            Some(right) => right.hit(r, t_min, t_max),
+            None => None,
+        };
+        if hit_right.is_some() {
+            hit_right
+        } else {
+            hit_left
         }
     }
 }
