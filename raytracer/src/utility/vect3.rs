@@ -90,6 +90,12 @@ impl ops::IndexMut<usize> for Vect3 {
     }
 }
 
+impl PartialEq for Vect3 {
+    fn eq(&self, other: &Self) -> bool {
+        self.e[0] == other.e[0] && self.e[1] == other.e[1] && self.e[2] == other.e[2]
+    }
+}
+
 impl AddAssign<Vect3> for Vect3 {
     fn add_assign(&mut self, rhs: Vect3) {
         self[0] += rhs[0];
@@ -219,10 +225,10 @@ impl Read for Vect3 {
     }
 }
 
-pub fn unit_vector(v: Vect3) -> Vect3 {
-    v / v.length()
+pub fn unit_vector(v: &Vect3) -> Vect3 {
+    *v / v.length()
 }
-pub fn dot(v1: Vect3, v2: Vect3) -> f64 {
+pub fn dot(v1: &Vect3, v2: &Vect3) -> f64 {
     let result: f64 = v1.e[0] * v2.e[0] + v1.e[1] * v2.e[1] + v1.e[2] * v2.e[2];
     result
 }
@@ -257,14 +263,18 @@ pub fn random_in_unit_sphere() -> Vect3 {
 //     }
 // }
 
-pub fn reflect(v: Vect3, n: Vect3) -> Vect3 {
-    v - (n * dot(v, n)) * 2.0
+pub fn reflect(v: &Vect3, n: &Vect3) -> Vect3 {
+    *v - (*n * dot(v, n)) * 2.0
 }
 
-pub fn refract(uv: Vect3, n: Vect3, etai_over_etat: f64) -> Vect3 {
-    let cos_theta: f64 = if dot(-uv, n) < 1.0 { dot(-uv, n) } else { 1.0 };
-    let r_out_perp = (uv + n * cos_theta) * etai_over_etat;
-    let r_out_parallel = -n * (1.0 - r_out_perp.squared_length()).abs().sqrt();
+pub fn refract(uv: &Vect3, n: &Vect3, etai_over_etat: f64) -> Vect3 {
+    let cos_theta: f64 = if dot(&(-*uv), n) < 1.0 {
+        dot(&(-*uv), n)
+    } else {
+        1.0
+    };
+    let r_out_perp = (*uv + *n * cos_theta) * etai_over_etat;
+    let r_out_parallel = -(*n) * (1.0 - r_out_perp.squared_length()).abs().sqrt();
     r_out_perp + r_out_parallel
 }
 

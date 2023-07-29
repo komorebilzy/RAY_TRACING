@@ -29,8 +29,8 @@ impl Camera {
         let viewport_height = h * 2.0;
         let viewport_width = aspect_ratio * viewport_height;
         // let focal_length = 1.0;
-        let ww = unit_vector(look.0 - look.1);
-        let uu = unit_vector(cross(vup, ww));
+        let ww = unit_vector(&(look.0 - look.1));
+        let uu = unit_vector(&cross(vup, ww));
         let vv = cross(ww, uu);
         Camera {
             _w: ww,
@@ -52,8 +52,10 @@ impl Camera {
         let rd = random_in_unit_disk() * self.lens_radius;
         let offset = self.u * rd.x() + self.v * rd.y();
         Ray::new(
-            self.origin + offset,
-            self.lower_left_corner + self.horizontal * s + self.vertical * t - self.origin - offset,
+            &(self.origin + offset),
+            &(self.lower_left_corner + self.horizontal * s + self.vertical * t
+                - self.origin
+                - offset),
             random_double_rng(self.time0, self.time1),
         )
     }

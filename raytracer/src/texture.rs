@@ -2,7 +2,7 @@ use image::GenericImageView;
 
 use crate::*;
 pub trait Texture: Send + Sync {
-    fn value(&self, u: f64, v: f64, p: Vect3) -> Vect3;
+    fn value(&self, u: f64, v: f64, p: &Vect3) -> Vect3;
 }
 
 #[derive(Clone)]
@@ -10,8 +10,8 @@ pub struct SolidColor {
     pub color_value: Vect3,
 }
 impl SolidColor {
-    pub fn new1(c: Vect3) -> Self {
-        Self { color_value: (c) }
+    pub fn new1(c: &Vect3) -> Self {
+        Self { color_value: (*c) }
     }
     // pub fn new2(red: f64, green: f64, blue: f64) -> Self {
     //     Self {
@@ -21,7 +21,7 @@ impl SolidColor {
 }
 
 impl Texture for SolidColor {
-    fn value(&self, _u: f64, _v: f64, _p: Vect3) -> Vect3 {
+    fn value(&self, _u: f64, _v: f64, _p: &Vect3) -> Vect3 {
         self.color_value
     }
 }
@@ -48,7 +48,7 @@ pub struct CheckerTexture<T1: Texture, T2: Texture> {
 //     }
 // }
 impl<T1: Texture, T2: Texture> Texture for CheckerTexture<T1, T2> {
-    fn value(&self, u: f64, v: f64, p: Vect3) -> Vect3 {
+    fn value(&self, u: f64, v: f64, p: &Vect3) -> Vect3 {
         let sines = (10.0 * p.x()).sin() * (10.0 * p.y()).sin() * (10.0 * p.z()).sin();
         if sines < 0.0 {
             self.odd.value(u, v, p)
@@ -78,15 +78,16 @@ impl NoiseTexture {
     }
 }
 impl Texture for NoiseTexture {
-    fn value(&self, _u: f64, _v: f64, p: Vect3) -> Vect3 {
+    fn value(&self, _u: f64, _v: f64, p: &Vect3) -> Vect3 {
         Vect3::new(1.0, 1.0, 1.0)
             * 0.5
             * (1.0 + (self.scale * p.z() + 10.0 * self.noise.turb(p, 7)).sin())
     }
 }
 
+#[derive(Clone)]
 pub struct ImageTexture {
-    pub data: Vec<u8>,
+    pub data: Arc<Vec<u8>>,
     pub width: u32,
     pub height: u32,
     pub bytes_per_scanline: u32,
@@ -95,12 +96,13 @@ const COMPONENTS_PER_PIXEL: u32 = 3;
 impl ImageTexture {
     pub fn default() -> Self {
         Self {
-            data: (Vec::new()),
+            data: (Arc::new(Vec::new())),
             width: (0),
             height: (0),
             bytes_per_scanline: (0),
         }
     }
+
     pub fn new(filename: &str) -> Self {
         let mut ans = ImageTexture::default();
         let image_result = image::open(filename);
@@ -114,23 +116,20 @@ impl ImageTexture {
                 ans.width = image.width();
                 ans.height = image.height();
                 ans.bytes_per_scanline = COMPONENTS_PER_PIXEL * ans.width;
-                for y in 0..ans.height {
-                    for x in 0..ans.width {
-                        let pixel = image.get_pixel(x, y);
-                        ans.data.push(pixel[0]);
-                        ans.data.push(pixel[1]);
-                        ans.data.push(pixel[2]);
-                    }
-                }
+                let data = image.to_rgb8().into_vec();
+                ans.data = Arc::new(data)
             }
             Err(_err) => {}
         }
         ans
     }
+    pub fn empty(&self) -> bool {
+        self.data.is_empty()
+    }
 }
 
 impl Texture for ImageTexture {
-    fn value(&self, u: f64, v: f64, _p: Vect3) -> Vect3 {
+    fn value(&self, u: f64, v: f64, _p: &Vect3) -> Vect3 {
         if self.data.is_empty() {
             return Vect3::new(0.0, 1.0, 1.0);
         }

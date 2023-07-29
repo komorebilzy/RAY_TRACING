@@ -1,7 +1,7 @@
 # Summer-Ray-Tracer
 SJTU ACM Honor Class 2023 Ray Tracer Project With Rust !
 ![](./doc/assets/image-raytracing.png)
-
+![](./final_scene.jpg)
 **Before you start, please read this README carefully**, there is no useless information in this document.
 
 ### Introduction

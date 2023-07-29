@@ -4,7 +4,7 @@ use std::f64::consts::PI;
 
 use crate::*;
 pub trait Pdf {
-    fn value(&self, direction: Vect3) -> f64;
+    fn value(&self, direction: &Vect3) -> f64;
     fn generate(&self) -> Vect3;
 }
 
@@ -25,7 +25,7 @@ pub struct CosinePdf {
     uvw: Onb,
 }
 impl CosinePdf {
-    pub fn new(w: Vect3) -> Self {
+    pub fn new(w: &Vect3) -> Self {
         let mut uv = Onb::default();
         uv.build_from_w(w);
         Self { uvw: (uv) }
@@ -33,8 +33,8 @@ impl CosinePdf {
 }
 
 impl Pdf for CosinePdf {
-    fn value(&self, direction: Vect3) -> f64 {
-        let cosine = dot(unit_vector(direction), self.uvw.w());
+    fn value(&self, direction: &Vect3) -> f64 {
+        let cosine = dot(&unit_vector(direction), &self.uvw.w());
         if cosine <= 0.0 {
             0.0
         } else {
@@ -52,20 +52,20 @@ pub struct HittablePdf<'a, H: Hittable> {
     pub ptr: &'a H,
 }
 impl<'a, H: Hittable> HittablePdf<'a, H> {
-    pub fn new(p: &'a H, origin: Vect3) -> Self {
+    pub fn new(p: &'a H, origin: &Vect3) -> Self {
         Self {
-            o: (origin),
+            o: (*origin),
             ptr: (p),
         }
     }
 }
 
 impl<'a, H: Hittable> Pdf for HittablePdf<'a, H> {
-    fn value(&self, direction: Vect3) -> f64 {
-        self.ptr.pdf_value(self.o, direction)
+    fn value(&self, direction: &Vect3) -> f64 {
+        self.ptr.pdf_value(&self.o, direction)
     }
     fn generate(&self) -> Vect3 {
-        self.ptr.random(self.o)
+        self.ptr.random(&self.o)
     }
 }
 
@@ -87,7 +87,7 @@ impl<'a, P0: Pdf, P1: Pdf> Pdf for MixturePdf<'a, P0, P1> {
             self.p1.generate()
         }
     }
-    fn value(&self, direction: Vect3) -> f64 {
+    fn value(&self, direction: &Vect3) -> f64 {
         0.5 * self.p0.value(direction) + 0.5 * self.p1.value(direction)
     }
 }

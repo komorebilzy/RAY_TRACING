@@ -31,7 +31,7 @@ impl<M: Material> Hittable for MovingSphere<M> {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let oc = r.origin() - self.center(r.time());
         let a = (r.direction()).squared_length();
-        let half_b = dot(oc, r.direction());
+        let half_b = dot(&oc, &r.direction());
         let c = oc.squared_length() - self.radius * self.radius;
         let discriminant = half_b * half_b - a * c;
         if discriminant < 0.0 {

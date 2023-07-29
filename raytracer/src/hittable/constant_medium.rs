@@ -12,7 +12,7 @@ impl<H: Hittable> ConstantMedium<H, Isotropic<SolidColor>> {
     //         neg_inv_density: (-1.0 / d),
     //     }
     // }
-    pub fn new2(b: H, d: f64, c: Vect3) -> Self {
+    pub fn new2(b: H, d: f64, c: &Vect3) -> Self {
         Self {
             boundary: (b),
             phase_function: Isotropic::new1(c),

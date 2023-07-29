@@ -26,9 +26,9 @@ impl<M: Material> Sphere<M> {
 impl<M: Material> Hittable for Sphere<M> {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let oc: Vect3 = r.origin() - self.center;
-        let a: f64 = dot(r.direction(), r.direction());
-        let b: f64 = dot(oc, r.direction());
-        let c: f64 = dot(oc, oc) - self.radius * self.radius;
+        let a: f64 = dot(&r.direction(), &r.direction());
+        let b: f64 = dot(&oc, &r.direction());
+        let c: f64 = dot(&oc, &oc) - self.radius * self.radius;
         // let rec: Option<HitRecord> = None;
         let discriminant: f64 = b * b - a * c;
         if discriminant < 0.0 {
@@ -57,22 +57,22 @@ impl<M: Material> Hittable for Sphere<M> {
         };
         Some(output_box)
     }
-    fn pdf_value(&self, o: Vect3, v: Vect3) -> f64 {
+    fn pdf_value(&self, o: &Vect3, v: &Vect3) -> f64 {
         match self.hit(&Ray::new(o, v, 0.0), 0.001, INFINITY) {
             Some(_x) => {
                 let cos_theta_max =
-                    (1.0 - self.radius * self.radius / (self.center - o).squared_length()).sqrt();
+                    (1.0 - self.radius * self.radius / (self.center - *o).squared_length()).sqrt();
                 let solid_angle = 2.0 * PI * (1.0 - cos_theta_max);
                 1.0 / solid_angle
             }
             None => 0.0,
         }
     }
-    fn random(&self, o: Vect3) -> Vect3 {
-        let direction = self.center - o;
+    fn random(&self, o: &Vect3) -> Vect3 {
+        let direction = self.center - *o;
         let distance_squared = direction.squared_length();
         let mut uvw = Onb::default();
-        uvw.build_from_w(direction);
+        uvw.build_from_w(&direction);
         uvw.local2(random_to_sphere(self.radius, distance_squared))
     }
 }

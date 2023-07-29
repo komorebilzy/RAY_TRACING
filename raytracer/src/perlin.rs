@@ -17,7 +17,7 @@ impl Perlin {
             for (j, subsub) in sub.iter().enumerate() {
                 for (k, value) in subsub.iter().enumerate() {
                     let weight_v = Vect3::new(u - i as f64, v - j as f64, w - k as f64);
-                    accum += dot(*value, weight_v)
+                    accum += dot(value, &weight_v)
                         * (i as f64 * uu + (1.0 - i as f64) * (1.0 - uu))
                         * (j as f64 * vv + (1.0 - j as f64) * (1.0 - vv))
                         * (k as f64 * ww + (1.0 - k as f64) * (1.0 - ww));
@@ -84,7 +84,7 @@ impl Perlin {
     pub fn new() -> Self {
         let mut ran: Vec<Vect3> = Vec::new();
         for _i in 0..256 {
-            ran.push(unit_vector(Vect3::random1(-1.0, 1.0)));
+            ran.push(unit_vector(&Vect3::random1(-1.0, 1.0)));
         }
         Self {
             point_count: (256),
@@ -94,9 +94,9 @@ impl Perlin {
             perm_z: Perlin::perlin_generate_perm(),
         }
     }
-    pub fn turb(&self, p: Vect3, depth: i64) -> f64 {
+    pub fn turb(&self, p: &Vect3, depth: i64) -> f64 {
         let mut accum = 0.0;
-        let mut temp_p = p;
+        let mut temp_p = *p;
         let mut weight = 1.0;
         for _i in 0..depth {
             accum += weight * self.noise(temp_p);

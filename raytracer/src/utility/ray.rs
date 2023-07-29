@@ -13,10 +13,10 @@ impl Ray {
     //         tm: 0.0,
     //     }
     // }
-    pub fn new(a: Vect3, b: Vect3, t: f64) -> Self {
+    pub fn new(a: &Vect3, b: &Vect3, t: f64) -> Self {
         Self {
-            a: (a),
-            b: (b),
+            a: (*a),
+            b: (*b),
             tm: (t),
         }
     }

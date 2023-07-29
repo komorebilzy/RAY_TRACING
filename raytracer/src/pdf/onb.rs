@@ -43,7 +43,7 @@ impl Onb {
     pub fn local2(&self, a: Vect3) -> Vect3 {
         self.u() * a.x() + self.v() * a.y() + self.w() * a.z()
     }
-    pub fn build_from_w(&mut self, n: Vect3) {
+    pub fn build_from_w(&mut self, n: &Vect3) {
         self.axis[2] = unit_vector(n);
         let a = if self.w().x().abs() > 0.9 {
             Vect3::new(0.0, 1.0, 0.0)
